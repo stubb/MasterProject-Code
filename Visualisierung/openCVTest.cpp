@@ -36,7 +36,7 @@ int main(int argc, char** argv)
 			imshow("Window1", img);
 			imshow("Window2", img2);
 
-			waitKey(10);
+			waitKey(1);
 		}
 		else
 		{
