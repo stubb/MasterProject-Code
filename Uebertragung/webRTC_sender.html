@@ -1,11 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.2/jquery.mobile-1.4.2.min.css" />
+<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+<script src="http://code.jquery.com/mobile/1.4.2/jquery.mobile-1.4.2.min.js"></script>
+<!-- <script type='text/javascript' src='webRTC_sender.js'></script> -->
+<!-- <script type='text/javascript' src='https://cdn.firebase.com/v0/firebase.js'></script> -->
 <html>
 <head>
-<title>Sender</title>
-<script type='text/javascript' src='https://cdn.firebase.com/v0/firebase.js'></script>
+	<meta charset="utf-8"/>
+	<meta name="viewport" content="initial-scale=1, maximum-scale=1">
+	<link rel="stylesheet" href="client.css">
+	<title>Sender</title>
 </head>
 <body>
-<input type="file" id="fileinput" />
-<button onclick="sendMessage()">Send File</button>
-<script type='text/javascript' src='webRTC_sender.js'></script>
+		<!--<input type="file" id="fileinput" /> -->
+	<button type="button" disabled>
+		<img src="./images/Videos.png" alt="Video image"></img>
+		<span>Video</span>
+	</button>
+	<button onclick="sendMessage()">
+		<img src="./images/Paint.png" alt="Paint image"></img>
+		<span>Draw</span>
+	</button>
+	<button onclick="sendMessage()">
+		<img src="./images/Camera.png" alt="Photo image"></img>
+		<span>Photo</span>
+	</button>
+	<button onclick="sendMessage()">
+		<img src="./images/IM.png" alt="Message image"></img>
+		<span>Message</span>
+	</button>
 </body>
 </html>
