@@ -1,26 +1,27 @@
 body {
-    background-color: #afafaf;
+    background-color: #afafaf !important;
 }
 
-button {
-    background: #77b900;
+.multimedia-button {
+    background-color: #77b900;
 	  margin-top: 50px;
     margin-bottom: 50px;
     margin-right: 100px;
     margin-left: 100px;
 	  padding-top: 10px;
     padding-bottom: 10px;
-    padding-right: 20px;
-    padding-left: 20px;
-		width: 85%;
-		height: 20%;
+    padding-right: 10px;
+    padding-left: 10px;
+		width: 300px !important;
 }
 
-button > img {
+.multimedia-button > img {
 		background-color: #77b900;
 }
 
-button > span {
+.multimedia-button > span {
+		background-color: #77b900;
 		color: white;
+		text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
 
