@@ -30,7 +30,8 @@ if (navigator.getUserMedia) {
       function(localMediaStream) {
          var video = document.querySelector('video');
          video.src = window.URL.createObjectURL(localMediaStream);
-         // Do something with the video here, e.g. video.play()
+         // Do something with the video here, e.g. 
+				 video.play();
       },
 
       // errorCallback
@@ -46,6 +47,9 @@ if (navigator.getUserMedia) {
 </head>
 <body>
 		<div id="content_container">
+			<video width="320" height="240">
+				Your browser does not support the video tag.
+			</video>
 			<button>Send</button>
 		</div>
 </body>
