@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Connection Test</title>
+	<meta charset="utf-8"/>
+	<script src="network-facade.js"></script> 
+	<script src="network-webrtc.js"></script> 
+</head>
+<body>
+	<script>
+		var nwF = new NetworkFacade("WebRTC");
+		nwF.init();
+		var nwF2 = new NetworkFacade("zepHBT");
+		nwF2.init();
+	</script>
+
+   <div id="container">
+        <div id="remote">
+            <video id="remote-video" width="50%" height="50%"></video>
+        </div>
+    </div>
+    Server: <input type="text" id="server" value="http://localhost:8888" /><br>
+    Your name: <input type="text" id="localName" value="myclient"/>
+    <button id="connect" onclick="nwF.connect(document.getElementById('server').value.toLowerCase(),  document.getElementById('localName').value.toLowerCase());">Connect</button>
+    <button disabled="true" id="disconnect" onclick="nwF.disconnect();">Disconnect</button>
+    <br>
+    <button onclick="document.getElementById('debug').innerHTML='';">Clear log</button>
+    <pre id="debug"></pre>
+    <br>
+    <hr>
+</body>
+</html>
