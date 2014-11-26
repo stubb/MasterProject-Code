@@ -44,7 +44,7 @@ NetworkFacade.prototype.connect = function(server, localName) {
 	}
 };
 
-NetworkFacade.prototype.send = function() {
+NetworkFacade.prototype.streamVideo = function(source) {
 	if(this.protocol == "WebRTC") {
 	}
 	else if(this.protocol == "WebSocket") {

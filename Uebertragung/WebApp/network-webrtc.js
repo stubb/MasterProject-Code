@@ -34,6 +34,7 @@ WebRTCConnection.prototype.createPeerConnection = function(peer_id) {
                         sdpMid: event.candidate.sdpMid,
                         candidate: event.candidate.candidate
                     };
+										// send the offer SDP to remote peer
                     sendToPeer(peer_id, JSON.stringify(candidate));
                 } else {
                   console.log("End of candidates.");
@@ -41,8 +42,8 @@ WebRTCConnection.prototype.createPeerConnection = function(peer_id) {
             };
             this.pc.onconnecting = this.onSessionConnecting;
             this.pc.onopen = this.onSessionOpened;
-            this.pc.onaddstream = this.onRemoteStreamAdded;
-            this.pc.onremovestream = this.onRemoteStreamRemoved;
+            //this.pc.onaddstream = this.onRemoteStreamAdded;
+            //this.pc.onremovestream = this.onRemoteStreamRemoved;
             console.log("Created RTCPeerConnnection with config: " + JSON.stringify(this.pcConfig));
         } 
         catch (e) {
@@ -50,13 +51,14 @@ WebRTCConnection.prototype.createPeerConnection = function(peer_id) {
         }
     }
     
-
+/* Remote stream should be displayed.
 WebRTCConnection.prototype.onRemoteStreamAdded = function(event) {
       console.log("Remote stream added:", URL.createObjectURL(event.stream));
       var remoteVideoElement = document.getElementById('remote-video');
       remoteVideoElement.src = URL.createObjectURL(event.stream);
       remoteVideoElement.play();
     }
+		*/
     
 WebRTCConnection.prototype.handlePeerMessage = function(peer_id, data) {
         ++messageCounter;
@@ -235,7 +237,7 @@ WebRTCConnection.prototype.connect = function() {
     
 WebRTCConnection.prototype.disconnect = function() {
         if (request) {
-            request.abort();undefined
+            request.abort();
             request = null;
         }
         
@@ -251,15 +253,16 @@ WebRTCConnection.prototype.disconnect = function() {
             request = null;
             myId = -1;
         }
-      
+      /* GUI stuff
         document.getElementById("connect").disabled = false;
         document.getElementById("disconnect").disabled = true;
         document.getElementById("send").disabled = true;
+				*/
     }
     
     window.onbeforeunload = this.disconnect;
 
-/*
+/* GUI stuff
 WebRTCConnection.prototype.send = function() {
         var text = document.getElementById("message").value;
         var peer_id = parseInt(document.getElementById("peer_id").value);
@@ -270,7 +273,8 @@ WebRTCConnection.prototype.send = function() {
         }
     }
 */
-    
+
+/* GUI stuff
 WebRTCConnection.prototype.toggleMe = function(obj) {
         var id = obj.id.replace("toggle", "msg");
         var t = document.getElementById(id);
@@ -282,7 +286,8 @@ WebRTCConnection.prototype.toggleMe = function(obj) {
             t.style.display = "none";
         }
     }
-    
+*/
+
 WebRTCConnection.prototype.onSessionConnecting = function(message) {
 	console.log("Session connecting.");
 }
@@ -291,9 +296,10 @@ WebRTCConnection.prototype.onSessionOpened = function(message) {
 	console.log("Session opened.");
 }
     
-WebRTCConnection.prototype.onRemoteStreamRemoved = function(event) {
+/* Only sends the own stream.
+ * WebRTCConnection.prototype.onRemoteStreamRemoved = function(event) {
 	console.log("Remote stream removed.");
-}
+}*/
     
 WebRTCConnection.prototype.onRemoteSdpError = function(event) {
 	console.error('onRemoteSdpError', event.name, event.message);
