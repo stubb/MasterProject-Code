@@ -26,18 +26,18 @@
  */
 
 
-#include "talk/examples/peerconnection/client/linux/main_wnd.h"
+#include "main_wnd.h"
 
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <stddef.h>
 
-#include "talk/examples/peerconnection/client/defaults.h"
-#include "talk/base/common.h"
-#include "talk/base/logging.h"
-#include "talk/base/stringutils.h"
+#include "defaults.h"
+#include <libwebrtc/webrtc/base/common.h>
+#include <libwebrtc/webrtc/base/logging.h>
+#include <libwebrtc/webrtc/base/stringutils.h>
 
-using talk_base::sprintfn;
+using rtc::sprintfn;
 
 namespace {
 
@@ -53,7 +53,6 @@ gboolean OnDestroyedCallback(GtkWidget* widget, GdkEvent* event,
 }
 
 void OnClickedCallback(GtkWidget* widget, gpointer data) {
-	// calls OnClicked Callback
   reinterpret_cast<GtkMainWnd*>(data)->OnClicked(widget);
 }
 
@@ -355,7 +354,6 @@ void GtkMainWnd::OnClicked(GtkWidget* widget) {
   server_ = gtk_entry_get_text(GTK_ENTRY(server_edit_));
   port_ = gtk_entry_get_text(GTK_ENTRY(port_edit_));
   int port = port_.length() ? atoi(port_.c_str()) : 0;
-	// the connect init
   callback_->StartLogin(server_, port);
 }
 
@@ -520,3 +518,4 @@ void GtkMainWnd::VideoRenderer::RenderFrame(const cricket::VideoFrame* frame) {
 }
 
 
+  

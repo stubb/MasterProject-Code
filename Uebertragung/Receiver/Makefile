@@ -5,7 +5,7 @@ ifeq ($(OS),Windows_NT)
 	EXE = Client.exe
 else
 	ifeq ($(shell uname),Linux)
-		CXX = g++
+		CXX = clang++
 		CXXFLAGS = $(shell pkg-config gtk+-3.0 --cflags) -c -g -std=c++11 \
 			-fstack-protector \
 			--param=ssp-buffer-size=4 \
@@ -44,7 +44,8 @@ else
 			-fno-rtti \
 			-fno-threadsafe-statics \
 			-fvisibility-inlines-hidden \
-			-Wno-deprecated
+			-Wno-deprecated \
+			-DFOO
 		LDFLAGS = $(shell pkg-config gtk+-3.0 --libs) -lgthread-2.0 \
 	-lgtk-x11-2.0 \
 	-lgdk-x11-2.0 \
@@ -90,10 +91,25 @@ endif
 
 all: $(EXE)
 
-$(EXE): main.o
+$(EXE): main.o conductor.o defaults.o main_wnd.o per_connection_client.o
 	$(CXX) $< $(LDFLAGS) -o $@
 
 main.o: main.cc
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+conductor.o: conductor.cc
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+defaults.o: defaults.cc
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+#flagdefs.o: flagdefs.cc
+#	$(CXX) $(CXXFLAGS) $< -o $@
+
+main_wnd.o: main_wnd.cc
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+per_connection_client.o: per_connection_client.cc
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 clean:

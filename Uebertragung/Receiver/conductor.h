@@ -34,13 +34,11 @@
 #include <set>
 #include <string>
 
-#include "talk/examples/peerconnection/client/main_wnd.h"
-#include "talk/examples/peerconnection/client/peer_connection_client.h"
-#include "talk/app/webrtc/mediastreaminterface.h"
-#include "talk/app/webrtc/peerconnectioninterface.h"
-#include "talk/app/webrtc/test/fakeconstraints.h"
-#include "talk/app/webrtc/test/fakedtlsidentityservice.h"
-#include "talk/base/scoped_ptr.h"
+#include "main_wnd.h"
+#include "peer_connection_client.h"
+#include <libwebrtc/talk/app/webrtc/mediastreaminterface.h>
+#include <libwebrtc/talk/app/webrtc/peerconnectioninterface.h>
+#include <libwebrtc/webrtc/base/scoped_ptr.h>
 
 namespace webrtc {
 class VideoCaptureModule;
@@ -70,7 +68,7 @@ class Conductor
   bool connection_active() const;
 
   virtual void Close();
-  
+
  protected:
   ~Conductor();
   bool InitializePeerConnection();
@@ -132,15 +130,13 @@ class Conductor
   void SendMessage(const std::string& json_object);
 
   int peer_id_;
-  
-  webrtc::FakeConstraints constraints_;
-  talk_base::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection_;
-  talk_base::scoped_refptr<webrtc::PeerConnectionFactoryInterface>
+  rtc::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection_;
+  rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>
       peer_connection_factory_;
   PeerConnectionClient* client_;
   MainWindow* main_wnd_;
   std::deque<std::string*> pending_messages_;
-  std::map<std::string, talk_base::scoped_refptr<webrtc::MediaStreamInterface> >
+  std::map<std::string, rtc::scoped_refptr<webrtc::MediaStreamInterface> >
       active_streams_;
   std::string server_;
 };

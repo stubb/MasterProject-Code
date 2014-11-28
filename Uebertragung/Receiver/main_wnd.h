@@ -29,8 +29,8 @@
 #ifndef PEERCONNECTION_SAMPLES_CLIENT_LINUX_MAIN_WND_H_
 #define PEERCONNECTION_SAMPLES_CLIENT_LINUX_MAIN_WND_H_
 
-#include "talk/examples/peerconnection/client/main_wnd.h"
-#include "talk/examples/peerconnection/client/peer_connection_client.h"
+#include "main_wnd.h"
+#include "peer_connection_client.h"
 
 // Forward declarations.
 typedef struct _GtkWidget GtkWidget;
@@ -110,11 +110,11 @@ class GtkMainWnd : public MainWindow {
     }
 
    protected:
-    talk_base::scoped_ptr<uint8[]> image_;
+    rtc::scoped_ptr<uint8[]> image_;
     int width_;
     int height_;
     GtkMainWnd* main_wnd_;
-    talk_base::scoped_refptr<webrtc::VideoTrackInterface> rendered_track_;
+    rtc::scoped_refptr<webrtc::VideoTrackInterface> rendered_track_;
   };
 
  protected:
@@ -129,9 +129,9 @@ class GtkMainWnd : public MainWindow {
   std::string port_;
   bool autoconnect_;
   bool autocall_;
-  talk_base::scoped_ptr<VideoRenderer> local_renderer_;
-  talk_base::scoped_ptr<VideoRenderer> remote_renderer_;
-  talk_base::scoped_ptr<uint8> draw_buffer_;
+  rtc::scoped_ptr<VideoRenderer> local_renderer_;
+  rtc::scoped_ptr<VideoRenderer> remote_renderer_;
+  rtc::scoped_ptr<uint8> draw_buffer_;
   int draw_buffer_size_;
 };
 

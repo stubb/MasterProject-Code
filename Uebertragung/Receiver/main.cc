@@ -25,7 +25,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define WEBRTC_POSIX
 #include <gtk/gtk.h>
 
 #include <libwebrtc/talk/examples/peerconnection/client/conductor.h>

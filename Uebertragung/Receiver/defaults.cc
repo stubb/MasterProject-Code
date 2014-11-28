@@ -25,7 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "talk/examples/peerconnection/client/defaults.h"
+#include "defaults.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -36,7 +36,7 @@
 #include <unistd.h>
 #endif
 
-#include "talk/base/common.h"
+#include <libwebrtc/webrtc/base/common.h>
 
 const char kAudioLabel[] = "audio_label";
 const char kVideoLabel[] = "video_label";
