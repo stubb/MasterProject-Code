@@ -27,10 +27,10 @@
 
 #include <gtk/gtk.h>
 
-#include <libwebrtc/talk/examples/peerconnection/client/conductor.h>
-#include <libwebrtc/talk/examples/peerconnection/client/flagdefs.h>
-#include <libwebrtc/talk/examples/peerconnection/client/linux/main_wnd.h>
-#include <libwebrtc/talk/examples/peerconnection/client/peer_connection_client.h>
+#include "conductor.h"
+#include "flagdefs.h"
+#include "linux/main_wnd.h"
+#include "peer_connection_client.h"
 
 #include <libwebrtc/webrtc/base/ssladapter.h>
 #include <libwebrtc/webrtc/base/thread.h>
@@ -98,8 +98,8 @@ int main(int argc, char* argv[]) {
   rtc::InitializeSSL();
   // Must be constructed after we set the socketserver.
   PeerConnectionClient client;
-  rtc::scoped_refptr<Conductor> conductor(
-      new rtc::RefCountedObject<Conductor>(&client, &wnd));
+  rtc::RefCountedObject<Conductor> foob = new rtc::RefCountedObject<Conductor>(&client, &wnd);
+  rtc::scoped_refptr<Conductor> conductor(foob);
   socket_server.set_client(&client);
   socket_server.set_conductor(conductor);
 

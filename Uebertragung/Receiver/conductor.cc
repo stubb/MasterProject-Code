@@ -373,7 +373,7 @@ void Conductor::AddStreams() {
 
   stream->AddTrack(audio_track);
   stream->AddTrack(video_track);
-  if (!peer_connection_->AddStream(stream, NULL)) {
+  if (!peer_connection_->AddStream(stream)) {
     LOG(LS_ERROR) << "Adding stream to PeerConnection failed";
   }
   typedef std::pair<std::string,

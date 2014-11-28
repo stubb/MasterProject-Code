@@ -11,41 +11,41 @@ else
 			--param=ssp-buffer-size=4 \
 			-pthread \
 			-fno-exceptions \
-	-fno-strict-aliasing \
-	-Wno-unused-parameter \
-	-Wno-missing-field-initializers \
-	-fvisibility=hidden \
-	-pipe \
-	-fPIC \
-	-Wno-unused-local-typedefs \
-	-pthread \
-	-I/usr/include/glib-2.0 \
-	-I/usr/lib/x86_64-linux-gnu/glib-2.0/include \
-	-I/usr/include/gtk-2.0 \
-	-I/usr/lib/x86_64-linux-gnu/gtk-2.0/include \
-	-I/usr/include/atk-1.0 \
-	-I/usr/include/cairo \
-	-I/usr/include/gdk-pixbuf-2.0 \
-	-I/usr/include/pango-1.0 \
-	-I/usr/include/gio-unix-2.0/ \
-	-I/usr/include/pixman-1 \
-	-I/usr/include/freetype2 \
-	-I/usr/include/libpng12 \
-	-I/usr/include/harfbuzz \
-	-I/usr/include/nss \
-	-I/usr/include/nspr \
-	-Wno-format \
-	-Wno-unused-result \
-	-O2 \
-	-fno-ident \
-	-fdata-sections \
-	-ffunction-sections \
-	-funwind-tables \
+			-fno-strict-aliasing \
+			-Wno-unused-parameter \
+			-Wno-missing-field-initializers \
+			-fvisibility=hidden \
+			-pipe \
+			-fPIC \
+			-pthread \
+			-I/usr/include/glib-2.0 \
+			-I/usr/lib/x86_64-linux-gnu/glib-2.0/include \
+			-I/usr/include/gtk-2.0 \
+			-I/usr/lib/x86_64-linux-gnu/gtk-2.0/include \
+			-I/usr/include/atk-1.0 \
+			-I/usr/include/cairo \
+			-I/usr/include/gdk-pixbuf-2.0 \
+			-I/usr/include/pango-1.0 \
+			-I/usr/include/gio-unix-2.0/ \
+			-I/usr/include/pixman-1 \
+			-I/usr/include/freetype2 \
+			-I/usr/include/libpng12 \
+			-I/usr/include/harfbuzz \
+			-I/usr/include/nss \
+			-I/usr/include/nspr \
+			-Wno-format \
+			-Wno-unused-result \
+			-O2 \
+			-fno-ident \
+			-fdata-sections \
+			-ffunction-sections \
+			-funwind-tables \
 			-fno-rtti \
 			-fno-threadsafe-statics \
 			-fvisibility-inlines-hidden \
 			-Wno-deprecated \
-			-DFOO
+			-DFOO \
+			-DWEBRTC_POSIX
 		LDFLAGS = $(shell pkg-config gtk+-3.0 --libs) -lgthread-2.0 \
 	-lgtk-x11-2.0 \
 	-lgdk-x11-2.0 \
@@ -91,7 +91,7 @@ endif
 
 all: $(EXE)
 
-$(EXE): main.o conductor.o defaults.o main_wnd.o per_connection_client.o
+$(EXE): main.o conductor.o defaults.o main_wnd.o per_connection_client.o linux/main_wnd.o 
 	$(CXX) $< $(LDFLAGS) -o $@
 
 main.o: main.cc
@@ -107,6 +107,9 @@ defaults.o: defaults.cc
 #	$(CXX) $(CXXFLAGS) $< -o $@
 
 main_wnd.o: main_wnd.cc
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+linux/main_wnd.o: linux/main_wnd.cc
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 per_connection_client.o: per_connection_client.cc
