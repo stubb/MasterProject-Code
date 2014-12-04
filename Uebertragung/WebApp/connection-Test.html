@@ -3,15 +3,22 @@
 <head>
 	<title>Connection Test</title>
 	<meta charset="utf-8"/>
-	<script src="network-facade.js"></script> 
-	<script src="network-webrtc.js"></script> 
+	<!-- Call WebRTC adapter to set the following vars:
+	//var RTCPeerConnection
+	//var getUserMedia
+	//var attachMediaStream
+	//var reattachMediaStream
+	//var webrtcDetectedBrowser
+	//var webrtcDetectedVersion
+	// also overrides different functions to take the used browser into account -->
+	<script src="network-webrtc-adapter.js"></script>
+	<script src="network-facade.js"></script>
+	<script src="network-webrtc.js"></script>
 </head>
 <body>
 	<script>
 		var nwF = new NetworkFacade("WebRTC");
 		nwF.init();
-		var nwF2 = new NetworkFacade("zepHBT");
-		nwF2.init();
 	</script>
 
    <div id="container">

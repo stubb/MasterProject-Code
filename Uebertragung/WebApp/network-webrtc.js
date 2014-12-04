@@ -1,5 +1,8 @@
 var WebRTCConnection = function () {
-    this.request = null;
+	// XMLHttpRequest
+	this.request = null;
+	
+    // XMLHttpRequest
     this.hangingGet = null;
     this.localName;
     this.server;
@@ -17,11 +20,6 @@ var WebRTCConnection = function () {
         'OfferToReceiveAudio': true,
         'OfferToReceiveVideo': true }};
     this.remoteStream;
-    
-    RTCPeerConnection = window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
-    RTCSessionDescription = window.mozRTCSessionDescription || window.RTCSessionDescription;
-    RTCIceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate;
-    URL = window.webkitURL || window.URL;
 }
 
 WebRTCConnection.prototype.createPeerConnection = function(peer_id) {
@@ -74,7 +72,7 @@ WebRTCConnection.prototype.handlePeerMessage = function(peer_id, data) {
         if (data.search("offer") != -1) {
             this.createPeerConnection(peer_id);
             var obj = this;
-            this.pc.setRemoteDescription(new RTCSessionDescription(dataJson), function(){obj.onRemoteSdpSucces(event)}, function(){obj.onRemoteSdpError()});              
+            this.pc.setRemoteDescription(new RTCSessionDescription(dataJson), this.onRemoteSdpSucces(), null);              
             this.pc.createAnswer(function(sessionDescription) {
                 console.log("Create answer:", sessionDescription);
                 this.pc.setLocalDescription(sessionDescription);
@@ -104,6 +102,9 @@ WebRTCConnection.prototype.parseIntHeader = function(r, name) {
     }
     
 WebRTCConnection.prototype.hangingGetCallback = function() {
+		console.log("hanginggetcallback called1");
+		//return function() {
+		console.log("hanginggetcallback called2");
         try {
             if (this.hangingGet.readyState != 4)
                 return;
@@ -130,13 +131,14 @@ WebRTCConnection.prototype.hangingGetCallback = function() {
       } catch (e) {
           console.log("Hanging get error: " + e.description);
       }
-    }
-    
+   // }
+}
+
 WebRTCConnection.prototype.startHangingGet = function() {
         try {
             this.hangingGet = new XMLHttpRequest();
 			var obj = this;
-            this.hangingGet.onreadystatechange = this.hangingGetCallback();
+            this.hangingGet.onreadystatechange = function(){obj.hangingGetCallback()};
             this.hangingGet.ontimeout = function(){obj.onHangingGetTimeout()};
             this.hangingGet.open("GET", this.server + "/wait?peer_id=" + this.myId, true);
             this.hangingGet.send();  
@@ -303,3 +305,4 @@ WebRTCConnection.prototype.onRemoteSdpError = function(event) {
 WebRTCConnection.prototype.onRemoteSdpSucces = function() {
 	console.log('onRemoteSdpSucces');
 }
+
