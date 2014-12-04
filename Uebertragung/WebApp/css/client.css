@@ -1,5 +1,12 @@
 #content_container {
-	margin: 0 5%;
+	margin-left: auto;
+	margin-right: auto;
+	width: 90%;
+}
+
+#video_tag {
+	position: relative;
+	width: 100%;
 }
 
 #canvasSignature {
