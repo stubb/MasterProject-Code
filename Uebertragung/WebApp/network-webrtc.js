@@ -72,15 +72,15 @@ WebRTCConnection.prototype.handlePeerMessage = function(peer_id, data) {
         if (data.search("offer") != -1) {
             this.createPeerConnection(peer_id);
             var obj = this;
-            this.pc.setRemoteDescription(new RTCSessionDescription(dataJson), this.onRemoteSdpSucces(), null);              
-            this.pc.createAnswer(function(sessionDescription) {
+            this.pc.setRemoteDescription(new RTCSessionDescription(dataJson), function(){this.onRemoteSdpSucces();this.pc.createAnswer(function(sessionDescription) {
                 console.log("Create answer:", sessionDescription);
                 this.pc.setLocalDescription(sessionDescription);
                 var data = JSON.stringify(sessionDescription);
                 this.sendToPeer(peer_id, data);
             }, function(error) { // error
                 console.log("Create answer error:", error);
-            }, this.mediaConstraints); // type error  ); //}, null          
+            }, this.mediaConstraints);}, null);
+ // type error  ); //}, null          
         }
         else {
             console.log("Adding ICE candiate ", dataJson);
@@ -126,8 +126,9 @@ WebRTCConnection.prototype.hangingGetCallback = function() {
                 this.hangingGet = null;
             }
 
-            if (this.myId != -1)
-                window.setTimeout(this.startHangingGet, 0);
+           // if (this.myId != -1)
+            //    window.setTimeout(this.startHangingGet, 0);
+            this.startHangingGet();
       } catch (e) {
           console.log("Hanging get error: " + e.description);
       }
@@ -137,7 +138,10 @@ WebRTCConnection.prototype.hangingGetCallback = function() {
 WebRTCConnection.prototype.startHangingGet = function() {
         try {
             this.hangingGet = new XMLHttpRequest();
+			console.log("X");
 			var obj = this;
+			console.log(obj);
+			console.log("XXXXXX: " + JSON.stringify(obj));
             this.hangingGet.onreadystatechange = function(){obj.hangingGetCallback()};
             this.hangingGet.ontimeout = function(){obj.onHangingGetTimeout()};
             this.hangingGet.open("GET", this.server + "/wait?peer_id=" + this.myId, true);
@@ -151,8 +155,9 @@ WebRTCConnection.prototype.onHangingGetTimeout = function() {
         console.log("hanging get timeout. issuing again.");
         this.hangingGet.abort();
         this.hangingGet = null;
-        if (this.myId != -1)
-            window.setTimeout(this.startHangingGet, 0);
+       // if (this.myId != -1)
+       //     window.setTimeout(this.startHangingGet, 0);
+		this.startHangingGet();
     }
     
 WebRTCConnection.prototype.signInCallback = function() {
