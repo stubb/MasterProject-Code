@@ -11,6 +11,8 @@
 	<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
 	<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
 	<script src="network-webrtc-adapter.js"></script>
+	<script src="network-facade.js"></script>
+	<script src="network-webrtc.js"></script>
 	<script>
 		if (navigator.getUserMedia) {
 			navigator.getUserMedia (
@@ -40,6 +42,7 @@
 </head>
 <body>
 	<script>
+
 		var nwF = new NetworkFacade("WebRTC");
 		nwF.init();
 
@@ -60,7 +63,7 @@
 		<video id="video_tag" width="320" height="240">
 			Your browser does not support the video tag.
 		</video>
-		<button id="start_stream" onclick="toggleStartButton(nwF)">Start stream</button>
+		<button id="start_stream" onclick="toggleStartButton(nwF);">Start stream</button>
 	</div>
 </body>
 </html>
