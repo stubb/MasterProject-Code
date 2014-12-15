@@ -14,9 +14,9 @@ var supportedProtocols = ['WebRTC', 'WebSocket']
 var NetworkFacade = function (protocol) {
 	this.protocol = protocol;
 	this.connection = null;
-  console.log('NetworkFacade instance created with type ' + this.protocol);
+	console.log('NetworkFacade instance created with type ' + this.protocol);
 	if(!supportedProtocols.contains(this.protocol)) {
-  	console.log('NetworkFacade does not support protocol type ' + this.protocol);
+	console.log('NetworkFacade does not support protocol type ' + this.protocol);
 	}
 };
 
@@ -29,6 +29,7 @@ NetworkFacade.prototype.init = function() {
 	}
 	else {
 		// do nothing
+		console.log('Error');
 	}
 };
 

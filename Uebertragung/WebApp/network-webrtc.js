@@ -8,7 +8,6 @@ var WebRTCConnection = function () {
     this.server;
     this.myId = -1;
     this.otherPeers = {};
-    this.messageCounter = 0;
     this.pc;    
     this.pcConfig = {"iceServers": [{"url": "stun:stun.l.google.com:19302"}]};
     this.pcOptions = {
@@ -43,7 +42,7 @@ WebRTCConnection.prototype.createPeerConnection = function(peer_id) {
             this.pc.onopen = function(){obj.onSessionOpened()};
             this.pc.onaddstream = function(){obj.onRemoteStreamAdded()};
             this.pc.onremovestream = function(){obj.onRemoteStreamRemoved()};
-            console.log("Created RTCPeerConnnection with config: " + JSON.stringify(this.pcConfig));
+            console.log("Created RTCPeerConnnection with config: " + JSON.stringify(this.pcConfig) + JSON.stringify(this.pc));
         } 
         catch (e) {
             console.log("Failed to create PeerConnection with exception: " + e.message);
@@ -58,15 +57,7 @@ WebRTCConnection.prototype.onRemoteStreamAdded = function(event) {
       remoteVideoElement.play();*/
     }
     
-WebRTCConnection.prototype.handlePeerMessage = function(peer_id, data) {
-        ++this.messageCounter;
-        var str = "Message from '" + this.otherPeers[peer_id] + "'&nbsp;";
-        str += "<span id='toggle_" + this.messageCounter + "' onclick='toggleMe(this);' ";
-        str += "style='cursor: pointer'>+</span><br>";
-        str += "<blockquote id='msg_" + this.messageCounter + "' style='display:none'>";
-        str += data + "</blockquote>";
-        console.log(str);
-        
+WebRTCConnection.prototype.handlePeerMessage = function(peer_id, data) {      
         var dataJson = JSON.parse(data);
         console.log("received ", dataJson);
         if (data.search("offer") != -1) {
@@ -83,9 +74,11 @@ WebRTCConnection.prototype.handlePeerMessage = function(peer_id, data) {
  // type error  ); //}, null          
         }
         else {
-            console.log("Adding ICE candiate ", dataJson);
+            console.log("Adding ICE candidate ", dataJson);
             var candidate = new RTCIceCandidate({sdpMLineIndex: dataJson.sdpMLineIndex, candidate: dataJson.candidate});
-            pc.addIceCandidate(candidate);
+            this.pc.addIceCandidate(candidate,
+									function(){console.log("addIceCandidate success")},
+									function(error){console.log("addIceCandidate fail", JSON.stringify(error))});
         }
     }    
      
@@ -102,9 +95,6 @@ WebRTCConnection.prototype.parseIntHeader = function(r, name) {
     }
     
 WebRTCConnection.prototype.hangingGetCallback = function() {
-		console.log("hanginggetcallback called1");
-		//return function() {
-		console.log("hanginggetcallback called2");
         try {
             if (this.hangingGet.readyState != 4)
                 return;
@@ -113,6 +103,7 @@ WebRTCConnection.prototype.hangingGetCallback = function() {
                 this.disconnect();
             } else {
                 var peer_id = this.parseIntHeader(this.hangingGet, "Pragma");
+				console.log("peer_id: " + peer_id);
                 console.log("Message from:", peer_id, ':', this.hangingGet.responseText);
                 if (peer_id == this.myId) {
                   this.handleServerNotification(this.hangingGet.responseText);
@@ -136,20 +127,17 @@ WebRTCConnection.prototype.hangingGetCallback = function() {
 }
 
 WebRTCConnection.prototype.startHangingGet = function() {
-        try {
-            this.hangingGet = new XMLHttpRequest();
-			console.log("X");
-			var obj = this;
-			console.log(obj);
-			console.log("XXXXXX: " + JSON.stringify(obj));
-            this.hangingGet.onreadystatechange = function(){obj.hangingGetCallback()};
-            this.hangingGet.ontimeout = function(){obj.onHangingGetTimeout()};
-            this.hangingGet.open("GET", this.server + "/wait?peer_id=" + this.myId, true);
-            this.hangingGet.send();  
-        } catch (e) {
-            console.log("error: " + e.description);
-        }
-    }
+	try {
+		var obj = this;
+		obj.hangingGet = new XMLHttpRequest();
+		obj.hangingGet.onreadystatechange = function(){obj.hangingGetCallback()};
+		obj.hangingGet.ontimeout = function(){obj.onHangingGetTimeout()};
+		obj.hangingGet.open("GET", obj.server + "/wait?peer_id=" + obj.myId, true);
+		obj.hangingGet.send();
+	} catch (e) {
+		console.log("error: " + e.description);
+	}
+}
     
 WebRTCConnection.prototype.onHangingGetTimeout = function() {
         console.log("hanging get timeout. issuing again.");
@@ -187,12 +175,12 @@ WebRTCConnection.prototype.signIn = function(server, localName) {
     this.server = server;
     this.localName = localName;
       try {
-          this.request = new XMLHttpRequest();
-          var obj = this;
-          this.request.onreadystatechange = function(){obj.signInCallback()};
-          this.request.open("GET", this.server + "/sign_in?" + this.localName, true);
-          this.request.send();
-          console.log("request send: " + this.server + ", " + this.localName+ ", " + this.request.readyState)
+			var obj = this;
+          obj.request = new XMLHttpRequest();
+          obj.request.onreadystatechange = function(){obj.signInCallback()};
+          obj.request.open("GET", obj.server + "/sign_in?" + obj.localName, true);
+          obj.request.send();
+          console.log("request send: " + obj.server + ", " + obj.localName+ ", " + obj.request.readyState)
       } catch (e) {
           console.log("error: " + e.description);
       }
