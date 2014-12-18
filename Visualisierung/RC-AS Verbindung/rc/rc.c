@@ -15,6 +15,10 @@
 	#include <dirent.h>
 	#include <sys/socket.h>
 	#include <sys/types.h>
+	#include <sys/types.h>
+	#include <netinet/in.h>
+	#include <unistd.h> /* for close() for socket */ 
+	#include <stdlib.h>
 #endif
 
 #if defined _WIN32
@@ -157,17 +161,31 @@ int main(int argc, char *argv[])
 		// }
 	}
 
-	SOCKET s, s1;
 	int rc;	//Rueckgabewert
+
+#ifdef __WIN32__
+	SOCKET s, s1;
 	struct sockaddr_in addr;	//IPv4 Adresse
 	{
 		WSADATA wsaData;
 		rc = WSAStartup(MAKEWORD(2,2), &wsaData);
 	}
+#else
+	int s;
+	int s1;
+	struct sockaddr_in addr;
+	memset(&addr, 0, sizeof addr);
+#endif
 
 	s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	addr.sin_family = AF_INET;
+
+#ifdef __WIN32__
 	addr.sin_addr.S_un.S_addr = ADDR_ANY;	//Akzeptiere jede Adresse
+#else
+	addr.sin_addr.s_addr = htonl(INADDR_ANY);
+#endif
+
 	addr.sin_port = htons(11111);
 
 
