@@ -60,6 +60,7 @@ static int PollEvents()
 int main(int argc, char *argv[])
 {
 	int MAX_CONNECTION_TRIES = 10;
+	int IMAGE_CHUNKS = 1;
 	
 	const int SCREEN_FPS = 24;
 	const int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
@@ -67,7 +68,7 @@ int main(int argc, char *argv[])
 	SDL_Window *sdlWindow;
 	SDL_Renderer *sdlRenderer;
 	    sdlWindow = SDL_CreateWindow(
-        "test window",                  // window title
+        "24FPS_Test window",                  // window title
         SDL_WINDOWPOS_UNDEFINED,           // initial x position
         SDL_WINDOWPOS_UNDEFINED,           // initial y position
         640,                               // width, in pixels
@@ -126,28 +127,54 @@ int main(int argc, char *argv[])
 		Uint32 mStartTicksCAP;
 		int countedFrames = 0;
 		mStartTicksFPS = SDL_GetTicks();
+		SDL_Texture *sdlTexture = SDL_CreateTexture(sdlRenderer, SDL_PIXELFORMAT_RGB24,
+								SDL_TEXTUREACCESS_STREAMING,
+								640,
+								480);
+		
+		int data_size = (640 * 480 * 3);
+		Uint32 myPixels[data_size];
+		unsigned char* myPixelsBuffer;
+		int pitch;
+		
+		// send Metadata
+		int meta_data[3] = {IMAGE_CHUNKS, 640, 480};
+		rc = send(s, (char*)meta_data, 3 * sizeof(int), 0);
+	
 		while (!PollEvents())
 		{
 			mStartTicksCAP = SDL_GetTicks();
 			
-			// generate something
-			SDL_SetRenderDrawColor(sdlRenderer, random(0, 255), random(0, 255), random(0, 255), 255);
-			
-			 //Calculate and correct fps
+			// generate something & update texture. This foo will be replaced by a real input. Like a game GUI.
+			for(int i = 0; i < data_size; i++) {
+				myPixels[i] = random(0, 255);
+			}
+			SDL_UpdateTexture(sdlTexture, NULL, myPixels, 640 * sizeof (Uint32));
+
+			#if DEBUG
+			//Calculate and correct fps
 			float avgFPS = countedFrames / ( (SDL_GetTicks() - mStartTicksFPS) / 1000.f );
 			if( avgFPS > 2000000 ) {
 				avgFPS = 0;
 			}
-			
 			printf("Avg frames with cap %.0f\n", avgFPS);
-			
-			// get Metadata & send
-			
+			#endif
+						
+			// send texture pixel data
+			//SDL_LockTexture(sdlTexture, NULL, (void **)&myPixelsBuffer, &pitch);
+			for (int i = 0; i < IMAGE_CHUNKS; i++) {
+				rc = send(s, myPixels + (i * IMAGE_CHUNKS * data_size), data_size / IMAGE_CHUNKS, 0);
+			}
+			//SDL_UnlockTexture(sdlTexture);
 			
 			// display it
+			#if DEBUG
 			SDL_RenderClear(sdlRenderer);
+			SDL_RenderCopy(sdlRenderer, sdlTexture, NULL, NULL);
 			SDL_RenderPresent(sdlRenderer);
+			#endif
 			++countedFrames;
+			
 			//If frame finished early
 			int frameTicks = (SDL_GetTicks() - mStartTicksCAP);
 			if( frameTicks < SCREEN_TICKS_PER_FRAME ) {
