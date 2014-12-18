@@ -56,17 +56,16 @@ static void DrawSurface(int windowID, SDL_Surface* image)
 	window = SDL_GetWindowFromID(windowID);
 	if (window == NULL)
 	{
-		printf("Creating window failed!");
+		printf("Creating window failed!\n");
 		return;
 	}
 
 	surface = SDL_GetWindowSurface(window);
 	if (surface == NULL)
 	{
-		printf("Creating surface failed!");
+		printf("Creating surface failed!\n");
 		return;
 	}
-
 	int sectionWidth = image->w / ds.num_displays;
 	//printf("Section Width: %i\n", sectionWidth);
 
@@ -78,11 +77,12 @@ static void DrawSurface(int windowID, SDL_Surface* image)
 				windowIdNormalizer = windowID;
 
 			SDL_Rect scale = { .x = (windowID - windowIdNormalizer) * sectionWidth, .y = 0, .w = sectionWidth, .h = image->h };
+
 			//printf("normalizer: %i\n", windowIdNormalizer);
 			//printf("%i, %i, %i, %i\n\n", scale.x, scale.y, scale.w, scale.h);
 			if (SDL_BlitScaled(image, &scale, surface, NULL) != 0)
 			{
-				printf("ScaleFail");
+				printf("ScaleFail\n");
 				return;
 			}
 			SDL_FreeSurface(surface);
@@ -90,7 +90,7 @@ static void DrawSurface(int windowID, SDL_Surface* image)
 	}
 	if (SDL_UpdateWindowSurface(window) != 0)
 	{
-		printf("Update Surface Failed!");
+		printf("Update Surface Failed!\n");
 		return;
 	}
 }
@@ -206,10 +206,11 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 	else
-		printf("Received Meta Data.\n");
+		printf("Received Meta Data. %i : %i : %i\n", meta_data[0], meta_data[1], meta_data[2]);
 
 	while (!PollEvents())
 	{
+		// RGB * width * height
 		unsigned char image[3 * meta_data[1] * meta_data[2]];
 
 		#if DEBUG
@@ -218,11 +219,13 @@ int main(int argc, char *argv[])
 
 		for (int i = 0; i < meta_data[0]; i++)
 		{
+			int chunk_length =  (3 * meta_data[1] * meta_data[2]) / meta_data[0];
+			int position = chunk_length * i;
 			#if DEBUG
-				printf("Position %i with Length %i\n", meta_data[1] * meta_data[2] / meta_data[0] * i, 3 * meta_data[1] * meta_data[2] / meta_data[0]);
+				printf("Position %i with Length %i\n", position, chunk_length);
 			#endif
 
-			rc = recv(s1, image + 3 * meta_data[1] * meta_data[2] / meta_data[0] * i, 3 * meta_data[1] * meta_data[2] / meta_data[0], 0);
+			rc = recv(s1, image + position, chunk_length, 0);
 			if (rc < 0)
 			{
 				printf("recv failed with code %i %i...exit\n", rc, errno);
@@ -231,14 +234,12 @@ int main(int argc, char *argv[])
 		}
 		for (int i = 0; i < ds.num_displays; i++)
 		{
-
-			SDL_Surface *img = SDL_CreateRGBSurfaceFrom((void *)image, meta_data[1], meta_data[2], 24, 1280 * 3, 0xFF0000, 0x00FF00, 0x0000FF, 0xFFFFFF);
+			SDL_Surface *img = SDL_CreateRGBSurfaceFrom((void *)image, meta_data[1], meta_data[2], 24, meta_data[1] * 3, 0xFF0000, 0x00FF00, 0x0000FF, 0xFFFFFF);
 			if (img == NULL)
 			{
 				printf("Convert of Image failed!\n");
 				return 1;
 			}
-			
 			DrawSurface(SDL_GetWindowID(ds.display[i].window), img);
 		}
 	}
