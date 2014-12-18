@@ -14,6 +14,11 @@
 	#include <dirent.h>
 	#include <sys/socket.h>
 	#include <sys/types.h>
+	#include <netinet/in.h>
+	#include <unistd.h>
+	#include <arpa/inet.h>
+	#include <errno.h>
+	#include <stdio.h>
 #endif
 
 using namespace cv;
@@ -33,21 +38,27 @@ int main(int argc, char** argv)
 		cout << "Couldn't open Video." << endl;
 		return 1;
 	}
-
-	SOCKET s;
+	
 	int rc;	//Rueckgabewert
 	struct sockaddr_in addr; //IPv4 Adresse
-
-	//WIN spezifisch ANFANG
+#ifdef __WIN32__
+	SOCKET s;
 	{
 		WSADATA wsaData;
 		rc = WSAStartup(MAKEWORD(2,2), &wsaData);
 	}
-	//WIN spezifisch ENDE
+#else
+	int s;
+	memset(&addr, 0, sizeof addr);
+#endif
 
 	s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	addr.sin_family = AF_INET;
+#ifdef __WIN32__
 	addr.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
+#else
+	addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+#endif
 	addr.sin_port = htons(11111);
 
 	int connection_tries = 0;
@@ -101,5 +112,7 @@ int main(int argc, char** argv)
 		}
 	}
 
+#ifdef __WIN32__
 	WSACleanup;
+#endif
 }
