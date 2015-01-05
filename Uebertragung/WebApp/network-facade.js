@@ -13,6 +13,7 @@ var supportedProtocols = ['WebRTC', 'WebSocket']
 
 var NetworkFacade = function (protocol) {
 	this.protocol = protocol;
+	this.handler = null;
 	this.connection = null;
 	console.log('NetworkFacade instance created with type ' + this.protocol);
 	if(!supportedProtocols.contains(this.protocol)) {
@@ -21,6 +22,7 @@ var NetworkFacade = function (protocol) {
 };
 
 NetworkFacade.prototype.init = function() {
+	this.handler = new NetworkHandlingClient();
 	if(this.protocol == "WebRTC") {
 		console.log('NetworkFacade init called for protocol WebRTC');
 		this.connection = new WebRTCConnection();
@@ -33,20 +35,16 @@ NetworkFacade.prototype.init = function() {
 	}
 };
 
+/** Sign in at the peerserver to be able to communicate with other peers.
+ * Will get the response from one assigned peer **/
 NetworkFacade.prototype.connect = function(server, localName) {
-	if(this.protocol == "WebRTC") {
-		console.log('NetworkFacade connect called for protocol WebRTC');
-		this.connection.signIn(server, localName);
-	}
-	else if(this.protocol == "WebSocket") {
-	}
-	else {
-		// do nothing
-	}
+	console.log(this.connection == null);
+	this.handler.signIn(server, localName, this.connection);
 };
 
 NetworkFacade.prototype.streamVideo = function(source) {
 	if(this.protocol == "WebRTC") {
+		//this.connection
 	}
 	else if(this.protocol == "WebSocket") {
 	}
@@ -57,15 +55,7 @@ NetworkFacade.prototype.streamVideo = function(source) {
 
 
 NetworkFacade.prototype.disconnect = function() {
-	if(this.protocol == "WebRTC") {
-		console.log('NetworkFacade disconnect called for protocol WebRTC');
-		this.connection.disconnect();
-	}
-	else if(this.protocol == "WebSocket") {
-	}
-	else {
-		// do nothing
-	}
+	this.handler.disconnect();
 };
 
 // Stream

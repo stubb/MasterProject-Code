@@ -13,6 +13,7 @@
 	<script src="network-webrtc-adapter.js"></script>
 	<script src="network-facade.js"></script>
 	<script src="network-webrtc.js"></script>
+	<script src="network-handling.js"></script>
 	<script>
 		if (navigator.getUserMedia) {
 			navigator.getUserMedia (
@@ -50,7 +51,9 @@
 			// stopped
 			if (document.getElementById("start_stream").innerHTML == "Start stream") {
 				document.getElementById("start_stream").innerHTML = "Stop stream";
-				facade.connect("http://141.45.202.190:8888", "kili_localhost");
+				facade.init();
+				facade.connect("http://orange:8888", "kili_localhost");
+				facade.streamVideo("video_tag");
 			}
 			// running
 			else {
