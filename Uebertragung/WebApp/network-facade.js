@@ -9,11 +9,11 @@ Array.prototype.contains = function(obj) {
     return false;
 }
 
-var supportedProtocols = ['WebRTC', 'WebSocket']
+var supportedProtocols = ['WebRTC', 'WebSocket'];
+var video_source = null;
 
 var NetworkFacade = function (protocol) {
 	this.protocol = protocol;
-	this.handler = null;
 	this.connection = null;
 	console.log('NetworkFacade instance created with type ' + this.protocol);
 	if(!supportedProtocols.contains(this.protocol)) {
@@ -21,13 +21,14 @@ var NetworkFacade = function (protocol) {
 	}
 };
 
-NetworkFacade.prototype.init = function() {
-	this.handler = new NetworkHandlingClient();
+NetworkFacade.prototype.startStreamVideo = function(server, localName, source) {
 	if(this.protocol == "WebRTC") {
 		console.log('NetworkFacade init called for protocol WebRTC');
-		this.connection = new WebRTCConnection();
+		addLocalStreamFromHere();
+		negotiateCallFromHere();
 	}
 	else if(this.protocol == "WebSocket") {
+		console.log('Not implemented yet!');	
 	}
 	else {
 		// do nothing
@@ -35,27 +36,15 @@ NetworkFacade.prototype.init = function() {
 	}
 };
 
-/** Sign in at the peerserver to be able to communicate with other peers.
- * Will get the response from one assigned peer **/
-NetworkFacade.prototype.connect = function(server, localName) {
-	console.log(this.connection == null);
-	this.handler.signIn(server, localName, this.connection);
-};
-
-NetworkFacade.prototype.streamVideo = function(source) {
+NetworkFacade.prototype.stopStreamVideo = function(e) {
 	if(this.protocol == "WebRTC") {
-		//this.connection
+		hangUpFromHere();
 	}
 	else if(this.protocol == "WebSocket") {
+		console.log('Not implemented yet!');	
 	}
 	else {
 		// do nothing
+		console.log('Error');
 	}
 };
-
-
-NetworkFacade.prototype.disconnect = function() {
-	this.handler.disconnect();
-};
-
-// Stream
