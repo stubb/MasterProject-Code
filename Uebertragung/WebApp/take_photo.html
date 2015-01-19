@@ -6,44 +6,18 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="css/themes/htw_color.css" />
 	<link rel="stylesheet" href="css/themes/jquery.mobile.icons.min.css" />
-	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile.structure-1.4.5.min.css" />
-	<link rel="stylesheet" href="css/client.css">
-	<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile.structure-1.4.5.min.css" /> 
+	<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script> 
 	<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
-	<script src="network-webrtc-adapter.js"></script>
-	<script>
-		if (navigator.getUserMedia) {
-			navigator.getUserMedia (
-				// constraints
-				{
-					video: true,
-					audio: true
-				},
+	<link rel="stylesheet" href="css/client.css">
 
-				// successCallback
-				function(localMediaStream) {
-					var video = document.querySelector('video');
-					video.src = window.URL.createObjectURL(localMediaStream);
-					// Do something with the video here, e.g. 
-					video.play();
-				},
-
-				// errorCallback
-				function(err) {
-					console.log("The following error occured: " + err);
-				}
-			);
-		} else {
-			console.log("getUserMedia not supported");
-		}
-	</script>
 </head>
 <body>
-		<div id="content_container">
-			<video width="320" height="240">
-				Your browser does not support the video tag.
-			</video>
-			<button>Send</button>
-		</div>
+  <div id="container">
+    <video autoplay></video>
+    <button>Take snapshot</button>
+    <canvas></canvas>
+  </div>
+  <script src="canvas.js"></script>
 </body>
 </html>

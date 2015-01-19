@@ -9,7 +9,8 @@ Array.prototype.contains = function(obj) {
     return false;
 }
 
-var supportedProtocols = ['WebRTC', 'WebSocket']
+var supportedProtocols = ['WebRTC', 'WebSocket'];
+var video_source = null;
 
 var NetworkFacade = function (protocol) {
 	this.protocol = protocol;
@@ -20,12 +21,14 @@ var NetworkFacade = function (protocol) {
 	}
 };
 
-NetworkFacade.prototype.init = function() {
+NetworkFacade.prototype.startStreamVideo = function(server, localName, source) {
 	if(this.protocol == "WebRTC") {
 		console.log('NetworkFacade init called for protocol WebRTC');
-		this.connection = new WebRTCConnection();
+		addLocalStreamFromHere();
+		negotiateCallFromHere();
 	}
 	else if(this.protocol == "WebSocket") {
+		console.log('Not implemented yet!');	
 	}
 	else {
 		// do nothing
@@ -33,39 +36,15 @@ NetworkFacade.prototype.init = function() {
 	}
 };
 
-NetworkFacade.prototype.connect = function(server, localName) {
+NetworkFacade.prototype.stopStreamVideo = function(e) {
 	if(this.protocol == "WebRTC") {
-		console.log('NetworkFacade connect called for protocol WebRTC');
-		this.connection.signIn(server, localName);
+		hangUpFromHere();
 	}
 	else if(this.protocol == "WebSocket") {
+		console.log('Not implemented yet!');	
 	}
 	else {
 		// do nothing
+		console.log('Error');
 	}
 };
-
-NetworkFacade.prototype.streamVideo = function(source) {
-	if(this.protocol == "WebRTC") {
-	}
-	else if(this.protocol == "WebSocket") {
-	}
-	else {
-		// do nothing
-	}
-};
-
-
-NetworkFacade.prototype.disconnect = function() {
-	if(this.protocol == "WebRTC") {
-		console.log('NetworkFacade disconnect called for protocol WebRTC');
-		this.connection.disconnect();
-	}
-	else if(this.protocol == "WebSocket") {
-	}
-	else {
-		// do nothing
-	}
-};
-
-// Stream
