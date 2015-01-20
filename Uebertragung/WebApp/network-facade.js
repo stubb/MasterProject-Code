@@ -48,3 +48,18 @@ NetworkFacade.prototype.stopStreamVideo = function(e) {
 		console.log('Error');
 	}
 };
+
+NetworkFacade.prototype.sendData = function(data) {
+	if(this.protocol == "WebRTC") {
+		console.log('NetworkFacade init called for protocol WebRTC');
+		createDataChannelFromHere();
+		sendDataFromHere(data);
+	}
+	else if(this.protocol == "WebSocket") {
+		console.log('Not implemented yet!');	
+	}
+	else {
+		// do nothing
+		console.log('Error');
+	}
+};

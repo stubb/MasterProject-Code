@@ -10,7 +10,9 @@
 	<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script> 
 	<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
 	<link rel="stylesheet" href="css/client.css">
-
+	<script src="network-webrtc-adapter.js"></script>
+	<script src="network-facade.js"></script>
+	<script src="network-webrtc.js"></script>
 </head>
 <body>
 	<div id="content_container">
@@ -20,11 +22,15 @@
 			<input type="submit" value="Send">
 		</form>
 		<script>
+			var nwF = new NetworkFacade("WebRTC");
+			connectFromHere("http://orange:8888", "kili_pg");
 			var loadFile = function(event) {
 				var reader = new FileReader();
 				reader.onload = function(){
 					var output = document.getElementById('output');
 					output.src = reader.result;
+					console.log(reader.result);
+					nwF.sendData(reader.result);
 				};
 				reader.readAsDataURL(event.target.files[0]);
 			};

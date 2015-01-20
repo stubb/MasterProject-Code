@@ -166,8 +166,8 @@ function closeDataChannelFromHere() {
 }
 
 /* exported sendDataFromHere */
-function sendDataFromHere() {
-  var data = $('data-channel-send').value;
+function sendDataFromHere(data) {
+  //var data = $('data-channel-send').value;
   sendDataOnChannel(data);
 }
 
@@ -1082,12 +1082,14 @@ function dontTouchSdp_() {
 
 function hookupDataChannelCallbacks_() {
   setDataCallbacks(function(status) {
-    $('data-channel-status').value = status;
+	  //TODO here
+    //$('data-channel-status').value = status;
+	  console.log(status);
   },
   function(dataMessage) {
     console.log('Received ' + dataMessage.data);
-    $('data-channel-receive').value =
-      dataMessage.data + '\n' + $('data-channel-receive').value;
+   // $('data-channel-receive').value =
+    //  dataMessage.data + '\n' + $('data-channel-receive').value;
   });
 }
 
