@@ -45,13 +45,13 @@
 	<script>
 
 		var nwF = new NetworkFacade("WebRTC");
-		connectFromHere("http://orange:8888", "kili_localhost");
+		nwF.init("http://141.45.204.101:8888", "kili_localhost");
 
 		function toggleStartButton(facade) {
 			// stopped
 			if (document.getElementById("start_stream").innerHTML == "Start stream") {
 				document.getElementById("start_stream").innerHTML = "Stop stream";
-				facade.startStreamVideo("http://orange:8888", "kili_localhost", "video_tag");
+				facade.startStreamVideo("video_tag");
 			}
 			// running
 			else {
