@@ -6,34 +6,67 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="css/themes/htw_color.css" />
 	<link rel="stylesheet" href="css/themes/jquery.mobile.icons.min.css" />
-	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile.structure-1.4.5.min.css" /> 
+	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile.structure-1.4.5.min.css" />
+	<link rel="stylesheet" href="css/client.css">
 	<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script> 
 	<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
-	<link rel="stylesheet" href="css/client.css">
-	<script src="network-webrtc-adapter.js"></script>
+	<script src="network-websocket-adapter.js"></script>
 	<script src="network-facade.js"></script>
-	<script src="network-webrtc.js"></script>
 </head>
 <body>
+	<script type="text/javascript">
+		var nwF = new NetworkFacade("WebSocket");
+		nwF.init("ws://127.0.0.1:9002", "kili_localhost");
+		var xmlString = '<?xml version="1.0" encoding="UTF-8"?>';
+		var reader = new FileReader();
+		var type = null;
+		var imgData = "";
+		var width = 302;
+		var height = 150;
+		
+	</script>
 	<div id="content_container">
-		<img id="output" />
+		<canvas id="canvas" width="302" height="150"></canvas>
 		<form>
 			<input type="file" accept="image/*" autofocus onchange="loadFile(event)">
-			<input type="submit" value="Send">
+			<input type="button" onclick="sendFile()" value="Send"/>
 		</form>
 		<script>
-			var nwF = new NetworkFacade("WebRTC");
-			connectFromHere("http://orange:8888", "kili_pg");
-			var loadFile = function(event) {
-				var reader = new FileReader();
-				reader.onload = function(){
-					var output = document.getElementById('output');
-					output.src = reader.result;
-					console.log(reader.result);
-					nwF.sendData(reader.result);
-				};
-				reader.readAsDataURL(event.target.files[0]);
+			var ua2text = function(ua) {
+				var s = '';
+				for (var i = 0; i < ua.length; i++) {
+					s += ua[i].toString();
+				}
+				return s;
 			};
+			
+			var loadFile = function(event) {
+				var canvas = document.getElementById('canvas');
+			    var ctx = canvas.getContext('2d');
+				var img = new Image;
+				type = event.target.files[0].type;
+				img.src = URL.createObjectURL(event.target.files[0]);
+				img.onload = function() {
+					canvas.height = img.height;
+					canvas.width = img.width;
+					var ctx = canvas.getContext('2d');
+					ctx.drawImage(img, 0, 0);
+					imgData = ua2text(ctx.getImageData(0, 0, canvas.width, canvas.height).data);
+				}
+			};
+			
+			var sendFile = function() {
+				var time = new Date();
+				var timeStr = time.toLocaleTimeString();
+				xmlString += '<package>';
+				xmlString += '<user>' + nwF.localUserName + '</user>';
+				xmlString += '<type>' + type +'</type>';
+				xmlString += '<timestamp>' + timeStr + '</timestamp>';
+				xmlString += '<data>' + imgData + '</data>';
+				xmlString += '</package>';
+				nwF.sendData(xmlString);
+				console.log("Data sent!");
+			};		
 		</script>
 	</div>
 </body>

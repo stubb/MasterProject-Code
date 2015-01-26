@@ -14,14 +14,42 @@ var video_source = null;
 
 var NetworkFacade = function (protocol) {
 	this.protocol = protocol;
+	// NOTE: only used by WebSocket right now!
 	this.connection = null;
+	this.remoteUrl = null;
+	this.localUserName = null;
 	console.log('NetworkFacade instance created with type ' + this.protocol);
 	if(!supportedProtocols.contains(this.protocol)) {
-	console.log('NetworkFacade does not support protocol type ' + this.protocol);
+		console.log('NetworkFacade does not support protocol type ' + this.protocol);
 	}
 };
 
-NetworkFacade.prototype.startStreamVideo = function(server, localName, source) {
+NetworkFacade.prototype.init = function(server, localName) {
+	console.log("NetworkFacad Init called");
+	this.remoteUrl = url = server;
+	this.localUserName = user = localName;
+	
+	if(this.protocol == "WebRTC") {
+		connectFromHere(this.remoteUrl, this.localUserName);
+	}
+	else if (this.protocol == "WebSocket") {
+		this.connection = new WebSocket(this.remoteUrl);
+		
+		this.connection.onopen = function() {
+			console.log("Success, connected to " + url);
+		};
+			
+		this.connection.onerror = function() {
+			console.log("Error, cant connect to " + url);
+		};
+	}
+	else {
+		// do nothing
+		console.log('Error');
+	}
+}
+
+NetworkFacade.prototype.startStreamVideo = function(source) {
 	if(this.protocol == "WebRTC") {
 		console.log('NetworkFacade init called for protocol WebRTC');
 		addLocalStreamFromHere();
@@ -56,7 +84,7 @@ NetworkFacade.prototype.sendData = function(data) {
 		sendDataFromHere(data);
 	}
 	else if(this.protocol == "WebSocket") {
-		console.log('Not implemented yet!');	
+		this.connection.send(data);
 	}
 	else {
 		// do nothing
