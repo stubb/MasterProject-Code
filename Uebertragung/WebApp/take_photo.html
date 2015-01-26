@@ -6,18 +6,97 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="css/themes/htw_color.css" />
 	<link rel="stylesheet" href="css/themes/jquery.mobile.icons.min.css" />
-	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile.structure-1.4.5.min.css" /> 
+	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile.structure-1.4.5.min.css" />
+	<link rel="stylesheet" href="css/client.css">
 	<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script> 
 	<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
-	<link rel="stylesheet" href="css/client.css">
-
+	<script src="network-webrtc-adapter.js"></script>
+	<script src="network-websocket-adapter.js"></script>
+	<script src="network-facade.js"></script>
 </head>
 <body>
+	<script type="text/javascript">
+		var nwF = new NetworkFacade("WebSocket");
+		nwF.init("ws://127.0.0.1:9002", "kili_localhost");
+		var xmlString = '<?xml version="1.0" encoding="UTF-8"?>';
+		
+		var sendImg = function() {
+			var time = new Date();
+			var timeStr = time.toLocaleTimeString();
+			xmlString += '<package>';
+			xmlString += '<user>' + nwF.localUserName + '</user>';
+			xmlString += '<type>text</type>';
+			xmlString += '<timestamp>' + timeStr + '</timestamp>';
+			xmlString += '<data>' + document.getElementById('text').value + '</data>';
+			xmlString += '</package>';
+			nwF.sendData(xmlString);
+			console.log("Data sent!");
+			document.getElementById('text').value = "Your message was sent!";
+		};
+		
+		window.onbeforeunload = function() {
+			nwF.disconnect();
+		};
+		
+		// mostly copy&paste from https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Taking_still_photos
+		var streaming = false,
+      video1        = document.querySelector('#video'),
+      canvas       = document.querySelector('#canvas'),
+      photo        = document.querySelector('#photo'),
+      startbutton  = document.querySelector('#startbutton'),
+      width = 320,
+      height = 150;
+
+
+  if (navigator.getUserMedia) {
+			navigator.getUserMedia (
+				// constraints
+				{
+					video: true,
+					audio: false
+				},
+
+				// successCallback
+				function(localMediaStream) {
+					var video = document.querySelector('video');
+					video.src = window.URL.createObjectURL(localMediaStream);
+					// Do something with the video here, e.g. 
+					video.play();
+				},
+
+				// errorCallback
+				function(err) {
+					console.log("The following error occured: " + err);
+				}
+			);
+		} else {
+			console.log("getUserMedia not supported");
+		}
+
+ /* video.addEventListener('canplay', function(ev){
+    if (!streaming) {
+      height = video1.videoHeight / (video1.videoWidth/width);
+      video1.setAttribute('width', width);
+      video1.setAttribute('height', height);
+      canvas.setAttribute('width', width);
+      canvas.setAttribute('height', height);
+      streaming = true;
+    }
+  }, false); */
+
+  function takepicture() {
+	var canvas = document.getElementById('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    canvas.getContext('2d').drawImage(document.getElementById('video'), 0, 0, width, height);
+  }
+  
+	</script>
   <div id="container">
-    <video autoplay></video>
-    <button>Take snapshot</button>
-    <canvas></canvas>
+<video id="video"></video>
+<button id="startbutton" onclick="takepicture()">Take photo</button>
+<canvas id="canvas"></canvas>
+<img src="http://placekitten.com/g/320/261" id="photo" alt="photo">
   </div>
-  <script src="canvas.js"></script>
 </body>
 </html>
