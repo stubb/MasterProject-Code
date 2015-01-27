@@ -10,6 +10,7 @@
 	<link rel="stylesheet" href="css/client.css">
 	<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script> 
 	<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+	<script src="js/helper.js"></script>
 	<script src="network-webrtc-adapter.js"></script>
 	<script src="network-websocket-adapter.js"></script>
 	<script src="network-facade.js"></script>
@@ -18,37 +19,28 @@
 	<script type="text/javascript">
 		var nwF = new NetworkFacade("WebSocket");
 		nwF.init("ws://127.0.0.1:9002", "kili_localhost");
-		var xmlString = '<?xml version="1.0" encoding="UTF-8"?>';
 		
-		var sendImg = function() {
+		var sendFile = function() {
 			var time = new Date();
 			var timeStr = time.toLocaleTimeString();
+			var xmlString = '<?xml version="1.0" encoding="UTF-8"?>';
 			xmlString += '<package>';
 			xmlString += '<user>' + nwF.localUserName + '</user>';
-			xmlString += '<type>text</type>';
+			xmlString += '<type>image/png</type>';
+			xmlString += '<width>' + canvas.width +'</width>';
+			xmlString += '<height>' + canvas.height +'</height>';
 			xmlString += '<timestamp>' + timeStr + '</timestamp>';
-			xmlString += '<data>' + document.getElementById('text').value + '</data>';
+			xmlString += '<data>' + ua2text(canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data) + '</data>';
 			xmlString += '</package>';
 			nwF.sendData(xmlString);
 			console.log("Data sent!");
-			document.getElementById('text').value = "Your message was sent!";
 		};
 		
 		window.onbeforeunload = function() {
 			nwF.disconnect();
 		};
 		
-		// mostly copy&paste from https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Taking_still_photos
-		var streaming = false,
-      video1        = document.querySelector('#video'),
-      canvas       = document.querySelector('#canvas'),
-      photo        = document.querySelector('#photo'),
-      startbutton  = document.querySelector('#startbutton'),
-      width = 320,
-      height = 150;
-
-
-  if (navigator.getUserMedia) {
+		if (navigator.getUserMedia) {
 			navigator.getUserMedia (
 				// constraints
 				{
@@ -73,30 +65,19 @@
 			console.log("getUserMedia not supported");
 		}
 
- /* video.addEventListener('canplay', function(ev){
-    if (!streaming) {
-      height = video1.videoHeight / (video1.videoWidth/width);
-      video1.setAttribute('width', width);
-      video1.setAttribute('height', height);
-      canvas.setAttribute('width', width);
-      canvas.setAttribute('height', height);
-      streaming = true;
-    }
-  }, false); */
-
-  function takepicture() {
-	var canvas = document.getElementById('canvas');
-    canvas.width = width;
-    canvas.height = height;
-    canvas.getContext('2d').drawImage(document.getElementById('video'), 0, 0, width, height);
-  }
-  
+		function takepicture() {
+			var canvas = document.getElementById('canvas');
+			canvas.width = document.getElementById('video').videoWidth;
+			canvas.height = document.getElementById('video').videoHeight;
+			canvas.getContext('2d').drawImage(document.getElementById('video'), 0, 0, document.getElementById('video').videoWidth, document.getElementById('video').videoHeight);
+			document.getElementById("sendButton").disabled = false;
+		}
 	</script>
   <div id="container">
-<video id="video"></video>
-<button id="startbutton" onclick="takepicture()">Take photo</button>
-<canvas id="canvas"></canvas>
-<img src="http://placekitten.com/g/320/261" id="photo" alt="photo">
+	<video id="video"></video>
+	<button onclick="takepicture()">Take photo</button>
+	<button id="sendButton" onclick="sendFile()" disabled>Send</button>
+	<canvas id="canvas"></canvas>
   </div>
 </body>
 </html>

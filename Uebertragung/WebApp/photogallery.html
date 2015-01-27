@@ -10,6 +10,7 @@
 	<link rel="stylesheet" href="css/client.css">
 	<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script> 
 	<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+	<script src="js/helper.js"></script>
 	<script src="network-websocket-adapter.js"></script>
 	<script src="network-facade.js"></script>
 </head>
@@ -17,7 +18,6 @@
 	<script type="text/javascript">
 		var nwF = new NetworkFacade("WebSocket");
 		nwF.init("ws://127.0.0.1:9002", "kili_localhost");
-		var xmlString = '<?xml version="1.0" encoding="UTF-8"?>';
 		var reader = new FileReader();
 		var type = null;
 		var imgData = "";
@@ -31,15 +31,7 @@
 			<input type="file" accept="image/*" autofocus onchange="loadFile(event)">
 			<input type="button" onclick="sendFile()" value="Send"/>
 		</form>
-		<script>
-			var ua2text = function(ua) {
-				var s = '';
-				for (var i = 0; i < ua.length; i++) {
-					s += ua[i].toString();
-				}
-				return s;
-			};
-			
+		<script>			
 			var loadFile = function(event) {
 				var canvas = document.getElementById('canvas');
 			    var ctx = canvas.getContext('2d');
@@ -58,15 +50,22 @@
 			var sendFile = function() {
 				var time = new Date();
 				var timeStr = time.toLocaleTimeString();
+				var xmlString = '<?xml version="1.0" encoding="UTF-8"?>';
 				xmlString += '<package>';
 				xmlString += '<user>' + nwF.localUserName + '</user>';
 				xmlString += '<type>' + type +'</type>';
+				xmlString += '<width>' + canvas.width +'</width>';
+				xmlString += '<height>' + canvas.height +'</height>';
 				xmlString += '<timestamp>' + timeStr + '</timestamp>';
 				xmlString += '<data>' + imgData + '</data>';
 				xmlString += '</package>';
 				nwF.sendData(xmlString);
 				console.log("Data sent!");
-			};		
+			};
+			
+			window.onbeforeunload = function() {
+				nwF.disconnect();
+			};
 		</script>
 	</div>
 </body>
