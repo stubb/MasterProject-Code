@@ -13,7 +13,6 @@
 	#include <dirent.h>
 	#include <sys/socket.h>
 	#include <sys/types.h>
-	#include <sys/types.h>
 	#include <netinet/in.h>
 	#include <unistd.h> /* for close() for socket */ 
 	#include <stdlib.h>
@@ -80,7 +79,7 @@ int main(int argc, char *argv[])
 	if (ds.display == NULL)
 		return EXIT_FAILURE;
 
-	for (i = 0; i < ds.num_displays; i++)
+	for (i = 0; i < ds.num_displays; ++i)
 	{
 		// Too lazy to write some proper title string handling here.
 		char title[] = "Window 0";
@@ -167,7 +166,7 @@ int main(int argc, char *argv[])
 			position += rc;
 
 		} while (rc != 0) ;
-		for (int i = 0; i < ds.num_displays; i++)
+		for (int i = 0; i < ds.num_displays; ++i)
 		{
 			SDL_Rect slice = {i * meta_data[0] / ds.num_displays, 0, meta_data[0] / ds.num_displays, meta_data[0]};
 			SDL_UpdateTexture(ds.display[i].texture, NULL, (void *)image, meta_data[0] * NUMBER_OF_COLOR_CHANNELS);
@@ -177,7 +176,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	for (int i = 0; ds.num_displays; ++i)
+	for (int i = 0; i < ds.num_displays; ++i)
 	{
 		SDL_DestroyTexture(ds.display[i].texture);
 		SDL_DestroyRenderer(ds.display[i].renderer);

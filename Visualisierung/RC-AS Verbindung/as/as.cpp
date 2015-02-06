@@ -3,6 +3,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <SDL2/SDL.h>
 
 #define DEBUG 0
 
@@ -27,7 +28,7 @@ using namespace std;
 int main(int argc, char** argv)
 {
 	//cout << "Start " << argv[1] << endl;
-	int MAX_CONNECTION_TRIES = 10;
+	int MAX_CONNECTION_TRIES = 100;
 
 	VideoCapture vid(argv[1]);
 	Mat img;

@@ -1,8 +1,0 @@
-cmake_minimum_required(VERSION 2.8)
-project( openCVTest )
-find_package( OpenCV REQUIRED )
-add_executable( openCVTest as.cpp)
-target_link_libraries( openCVTest ${OpenCV_LIBS} )
-if (WIN32)
-	target_link_libraries( openCVTest wsock32 ws2_32)
-endif()
