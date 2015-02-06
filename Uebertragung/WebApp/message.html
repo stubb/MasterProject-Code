@@ -4,19 +4,44 @@
 	<title>Remote control</title>
 	<meta charset="utf-8"/>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="css/themes/htw_color.css" />
-  <link rel="stylesheet" href="css/themes/jquery.mobile.icons.min.css" />
-  <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile.structure-1.4.5.min.css" /> 
-  <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script> 
-  <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+	<link rel="stylesheet" href="css/themes/htw_color.css" />
+	<link rel="stylesheet" href="css/themes/jquery.mobile.icons.min.css" />
+	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile.structure-1.4.5.min.css" />
 	<link rel="stylesheet" href="css/client.css">
+	<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script> 
+	<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+	<script src="network-websocket-adapter.js"></script>
+	<script src="network-facade.js"></script>
 </head>
 <body>
-		<div id="content_container">
-			<textarea placeholder="Your message!"></textarea>
-			<button type="button" onclick="">
-				<span>Send</span>
-			</button>	
-		</div>
+	<script type="text/javascript">
+		var nwF = new NetworkFacade("WebSocket");
+		nwF.init("ws://127.0.0.1:9002", "kili_localhost");
+		var xmlString = '<?xml version="1.0" encoding="UTF-8"?>';
+		
+		var sendText = function() {
+			var time = new Date();
+			var timeStr = time.toLocaleTimeString();
+			xmlString += '<package>';
+			xmlString += '<user>' + nwF.localUserName + '</user>';
+			xmlString += '<type>text</type>';
+			xmlString += '<timestamp>' + timeStr + '</timestamp>';
+			xmlString += '<data>' + document.getElementById('text').value + '</data>';
+			xmlString += '</package>';
+			nwF.sendData(xmlString);
+			console.log("Data sent!");
+			document.getElementById('text').value = "Your message was sent!";
+		};
+		
+		window.onbeforeunload = function() {
+			nwF.disconnect();
+		};
+	</script>
+	<div id="content_container">
+		<textarea id="text" placeholder="Your message!"></textarea>
+		<button type="button" onclick="sendText()">
+			<span>Send</span>
+		</button>	
+	</div>
 </body>
 </html>
