@@ -11,21 +11,21 @@ else
 		CXX = g++
 		SDL_LIB = -L/usr/lib -lSDL2 -Wl,-rpath=/usr/lib -lSDL2_image
 		SDL_INCLUDE = -I/usr/include
-		CXXFLAGS = -Wall -c -std=c99
-		LDFLAGS = $(SDL_LIB)
-		EXE = ApplicationServer
+		OPENCV_INCLUDE =`pkg-config --cflags opencv`
+		OPENCV_LIB =`pkg-config --libs opencv`
+		LDFLAGS = $(SDL_LIB) $(OPENCV_LIB)
+		EXE = ApplicationServer.app
 	endif
 
 	ifeq ($(shell uname), Darwin)
 		CXX = clang
 		SDL = -framework SDL2 -framework SDL2_image
-		CXXFLAGS = -Wall -c -std=c99
 		LDFLAGS = $(SDL)
 		EXE = ApplicationServer
 	endif
 endif
 
-CXXFLAGS = -Wall -c -std=c99 $(SDL_INCLUDE) $(OPENCV_INCLUDE)
+CXXFLAGS = -Wall -c -std=c++11 $(SDL_INCLUDE) $(OPENCV_INCLUDE)
 
 all: $(EXE)
 
