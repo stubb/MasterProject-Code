@@ -42,12 +42,27 @@ NetworkFacade.prototype.init = function(server, localName) {
 		this.connection.onerror = function() {
 			console.log("Error, cant connect to " + url);
 		};
+		
+		this.connection.onclose = function () {};
 	}
 	else {
 		// do nothing
 		console.log('Error');
 	}
 }
+
+NetworkFacade.prototype.disconnect = function() {
+	if(this.protocol == "WebRTC") {
+		console.log('Not implemented yet!');
+	}
+	else if(this.protocol == "WebSocket") {
+		this.connection.close();
+	}
+	else {
+		// do nothing
+		console.log('Error');
+	}
+};
 
 NetworkFacade.prototype.startStreamVideo = function(source) {
 	if(this.protocol == "WebRTC") {
@@ -56,7 +71,7 @@ NetworkFacade.prototype.startStreamVideo = function(source) {
 		negotiateCallFromHere();
 	}
 	else if(this.protocol == "WebSocket") {
-		console.log('Not implemented yet!');	
+		console.log('Not implemented yet!');
 	}
 	else {
 		// do nothing
