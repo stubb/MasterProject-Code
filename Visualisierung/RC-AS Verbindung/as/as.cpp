@@ -28,7 +28,6 @@ int main(int argc, char** argv)
 {
 	//cout << "Start " << argv[1] << endl;
 	int MAX_CONNECTION_TRIES = 10;
-	int IMAGE_CHUNKS = 10;
 
 	VideoCapture vid(argv[1]);
 	Mat img;
@@ -69,6 +68,8 @@ int main(int argc, char** argv)
 		waitKey(100);
 	} while (rc < 0 && connection_tries <= MAX_CONNECTION_TRIES) ;
 
+	int numberOfRenderingClients = 1;
+
 	if (rc < 0)
 	{
 		cout << "Couldn't connect to Rendering Client. Max tries exceeded." << endl;
@@ -76,26 +77,22 @@ int main(int argc, char** argv)
 	}
 	else
 	{
-		int meta_data[3] = {IMAGE_CHUNKS, vid.get(CV_CAP_PROP_FRAME_WIDTH), vid.get(CV_CAP_PROP_FRAME_HEIGHT)};
-		rc = send(s, (char*)meta_data, 3 * sizeof(int), 0);
+		int meta_data[2] = {vid.get(CV_CAP_PROP_FRAME_WIDTH) / numberOfRenderingClients, vid.get(CV_CAP_PROP_FRAME_HEIGHT)};
+		cout << meta_data[0] << " " << meta_data[1] << endl;
+		rc = send(s, (char*)meta_data, 2 * sizeof(int), 0);
 		for (;;)
 		{
 			vid >> img;
 			if (!img.empty())
 			{
-				int x = img.cols / 2;
-				int y = img.rows / 2;
-				int width = img.cols / 2;
-				//img = img(Rect(0, 0, width, img.rows)).clone();
-				//img = Mat(img, Range(0, width));
-				//resize(img, img, Size(), 0.5, 0.5, INTER_NEAREST);
 				img = img.reshape(0,1);
-				for (int i = 0; i < IMAGE_CHUNKS; i++)
+				for (int i = 0; i < numberOfRenderingClients; ++i)
 				{
 					#if DEBUG
-						cout << "Position " << i * (img.total() * img.elemSize() / IMAGE_CHUNKS) << " with Length " << img.total() * img.elemSize() / IMAGE_CHUNKS << endl;
+						//cout << "Position " << i * (img.total() * img.elemSize() / IMAGE_CHUNKS) << " with Length " << img.total() * img.elemSize() / IMAGE_CHUNKS << endl;
 					#endif
-					rc = send(s, (char*) img.data + i * img.total() * img.elemSize() / IMAGE_CHUNKS, img.total() * img.elemSize() / IMAGE_CHUNKS, 0);
+
+					rc = send(s, (char*) img.data, img.total() * img.elemSize(), 0);
 					if (rc < 0)
 					{
 						printf("send failed with code %i %i...\nexit\n", rc, errno);

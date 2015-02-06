@@ -41,10 +41,10 @@ EQUALS = =
 CMAKE_EDIT_COMMAND = "C:\Program Files (x86)\CMake 2.8\bin\cmake-gui.exe"
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = C:\Users\jensb_000\Desktop\test\as
+CMAKE_SOURCE_DIR = "C:\Users\jensb_000\SkyDrive\Studium\Master\Praxisphase Forschungsprojekt\MasterProject-Code\Visualisierung\RC-AS Verbindung\as"
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = C:\Users\jensb_000\Desktop\test\as
+CMAKE_BINARY_DIR = "C:\Users\jensb_000\SkyDrive\Studium\Master\Praxisphase Forschungsprojekt\MasterProject-Code\Visualisierung\RC-AS Verbindung\as"
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -71,9 +71,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\jensb_000\Desktop\test\as\CMakeFiles C:\Users\jensb_000\Desktop\test\as\CMakeFiles\progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\jensb_000\SkyDrive\Studium\Master\Praxisphase Forschungsprojekt\MasterProject-Code\Visualisierung\RC-AS Verbindung\as\CMakeFiles" "C:\Users\jensb_000\SkyDrive\Studium\Master\Praxisphase Forschungsprojekt\MasterProject-Code\Visualisierung\RC-AS Verbindung\as\CMakeFiles\progress.marks"
 	$(MAKE) -f CMakeFiles\Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\jensb_000\Desktop\test\as\CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\jensb_000\SkyDrive\Studium\Master\Praxisphase Forschungsprojekt\MasterProject-Code\Visualisierung\RC-AS Verbindung\as\CMakeFiles" 0
 .PHONY : all
 
 # The main clean target

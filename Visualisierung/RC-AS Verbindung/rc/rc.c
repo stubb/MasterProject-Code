@@ -5,8 +5,6 @@
 #include <SDL2/SDL.h>
 #include <string.h>
 
-#define DEBUG 0
-
 #if defined _WIN32
 	#include "dirent.h"
 	#include <WinSock2.h>
@@ -21,18 +19,13 @@
 	#include <stdlib.h>
 #endif
 
-#if defined _WIN32
-	#include <SDL2/SDL_image.h>
-#elif defined __linux__
-	#include <SDL2/SDL_image.h>
-#else
-	#include <SDL2_image/SDL_image.h>
-#endif
-
+#define DEBUG 1
+#define NUMBER_OF_COLOR_CHANNELS 3
 
 struct DisplayInfo {
 	SDL_Window *window;
-	SDL_Rect bounds;
+	SDL_Renderer *renderer;
+	SDL_Texture *texture;
 };
 
 struct DisplaySetup {
@@ -46,54 +39,6 @@ struct DisplaySetup {
 static struct DisplaySetup ds;
 
 int windowIdNormalizer = 1;
-
-/* Draws the display positions for each display. */
-static void DrawSurface(int windowID, SDL_Surface* image)
-{
-	SDL_Window *window;
-	SDL_Surface *surface;
-
-	window = SDL_GetWindowFromID(windowID);
-	if (window == NULL)
-	{
-		printf("Creating window failed!\n");
-		return;
-	}
-
-	surface = SDL_GetWindowSurface(window);
-	if (surface == NULL)
-	{
-		printf("Creating surface failed!\n");
-		return;
-	}
-	int sectionWidth = image->w / ds.num_displays;
-	//printf("Section Width: %i\n", sectionWidth);
-
-	for (int i = 0; i < ds.num_displays; i++)
-	{
-		if (SDL_GetWindowID(ds.display[i].window) == windowID)
-		{
-			if (i == 0)
-				windowIdNormalizer = windowID;
-
-			SDL_Rect scale = { .x = (windowID - windowIdNormalizer) * sectionWidth, .y = 0, .w = sectionWidth, .h = image->h };
-
-			//printf("normalizer: %i\n", windowIdNormalizer);
-			//printf("%i, %i, %i, %i\n\n", scale.x, scale.y, scale.w, scale.h);
-			if (SDL_BlitScaled(image, &scale, surface, NULL) != 0)
-			{
-				printf("ScaleFail\n");
-				return;
-			}
-			SDL_FreeSurface(surface);
-		}
-	}
-	if (SDL_UpdateWindowSurface(window) != 0)
-	{
-		printf("Update Surface Failed!\n");
-		return;
-	}
-}
 
 static int PollEvents()
 {
@@ -122,7 +67,6 @@ static int PollEvents()
 
 int main(int argc, char *argv[])
 {
-	//return;
 	int i;
 
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER);
@@ -143,22 +87,12 @@ int main(int argc, char *argv[])
 		title[sizeof(title) - 2] += (char) i;
 
 		ds.display[i].window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED_DISPLAY(i),
-			SDL_WINDOWPOS_CENTERED_DISPLAY(i), 320, 240, 0/*SDL_WINDOW_FULLSCREEN_DESKTOP*/);
-		
+			SDL_WINDOWPOS_CENTERED_DISPLAY(i), 640, 480, /*0*/ SDL_WINDOW_FULLSCREEN_DESKTOP);
+		ds.display[i].renderer = SDL_CreateRenderer(ds.display[i].window, -1, 0);
 		SDL_Delay(1000);
 
 		if (ds.display[i].window == NULL)
 			return EXIT_FAILURE;
-
-		// This sets up some numbers for the drawing operation in DrawSurface.
-		if (SDL_GetDisplayBounds(i, &ds.display[i].bounds) < 0)
-			return EXIT_FAILURE;
-
-		printf("flags %d\n\n",SDL_GetWindowFlags( ds.display[i].window ));
-		// if (SDL_SetWindowFullscreen(ds.display[i].window,  SDL_WINDOW_FULLSCREEN_DESKTOP) != 0)
-		// {
-		// 	printf("shita\n");
-		// }
 	}
 
 	int rc;	//Rueckgabewert
@@ -197,8 +131,8 @@ int main(int argc, char *argv[])
 	printf("accepting connection...\n");
 	s1 = accept(s, NULL, NULL);
 
-	int meta_data[3] = {0};
-	rc = recv(s1, meta_data, 3 * sizeof(int), 0);
+	int meta_data[2] = {0};
+	rc = recv(s1, meta_data, 2 * sizeof(int), 0);
 
 	if (rc < 0)
 	{
@@ -206,45 +140,53 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 	else
-		printf("Received Meta Data. %i : %i : %i\n", meta_data[0], meta_data[1], meta_data[2]);
+	{
+		printf("Received Meta Data. Width: %i, Height: %i\n", meta_data[0], meta_data[1]);
+		for (int i = 0; i < ds.num_displays; ++i)
+		{
+			ds.display[i].texture = SDL_CreateTexture(ds.display[i].renderer, SDL_PIXELFORMAT_BGR24, SDL_TEXTUREACCESS_STREAMING, meta_data[0], meta_data[1]);
+		}
+	}
 
 	while (!PollEvents())
 	{
 		// RGB * width * height
-		unsigned char image[3 * meta_data[1] * meta_data[2]];
+		int numberOfPixelValues = NUMBER_OF_COLOR_CHANNELS * meta_data[0] * meta_data[1];
+		unsigned char image[numberOfPixelValues];
 
-		#if DEBUG
-			printf("Sizeof(image) = %i\n", sizeof(image));
-		#endif
-
-		for (int i = 0; i < meta_data[0]; i++)
+		int position = 0;
+		do
 		{
-			int chunk_length =  (3 * meta_data[1] * meta_data[2]) / meta_data[0];
-			int position = chunk_length * i;
-			#if DEBUG
-				printf("Position %i with Length %i\n", position, chunk_length);
-			#endif
-
-			rc = recv(s1, image + position, chunk_length, 0);
+			rc = recv(s1, image + position, numberOfPixelValues - position, 0);
 			if (rc < 0)
 			{
 				printf("recv failed with code %i %i...exit\n", rc, errno);
 				return 1;
 			}
-		}
+
+			position += rc;
+
+		} while (rc != 0) ;
 		for (int i = 0; i < ds.num_displays; i++)
 		{
-			SDL_Surface *img = SDL_CreateRGBSurfaceFrom((void *)image, meta_data[1], meta_data[2], 24, meta_data[1] * 3, 0xFF0000, 0x00FF00, 0x0000FF, 0xFFFFFF);
-			if (img == NULL)
-			{
-				printf("Convert of Image failed!\n");
-				return 1;
-			}
-			DrawSurface(SDL_GetWindowID(ds.display[i].window), img);
+			SDL_Rect slice = {i * meta_data[0] / ds.num_displays, 0, meta_data[0] / ds.num_displays, meta_data[0]};
+			SDL_UpdateTexture(ds.display[i].texture, NULL, (void *)image, meta_data[0] * NUMBER_OF_COLOR_CHANNELS);
+			SDL_RenderClear(ds.display[i].renderer);
+			SDL_RenderCopy(ds.display[i].renderer, ds.display[i].texture, &slice, NULL);
+			SDL_RenderPresent(ds.display[i].renderer);
 		}
 	}
 
-	SDL_Quit();
+	for (int i = 0; ds.num_displays; ++i)
+	{
+		SDL_DestroyTexture(ds.display[i].texture);
+		SDL_DestroyRenderer(ds.display[i].renderer);
+		SDL_DestroyWindow(ds.display[i].window);
+		ds.display[i].texture = NULL;
+		ds.display[i].renderer = NULL;
+		ds.display[i].window = NULL;
+	}
 	SDL_free(ds.display);
+	SDL_Quit();
 	return EXIT_SUCCESS;
 }
