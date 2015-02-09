@@ -4,31 +4,20 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_net.h>
 
 #define DEBUG 0
-
-#if defined _WIN32
-	#include "dirent.h"
-	#include <WinSock2.h>
-	#pragma comment(lib, "libws2_32.a")
-#else
-	#include <dirent.h>
-	#include <sys/socket.h>
-	#include <sys/types.h>
-	#include <netinet/in.h>
-	#include <unistd.h>
-	#include <arpa/inet.h>
-	#include <errno.h>
-	#include <stdio.h>
-#endif
 
 using namespace cv;
 using namespace std;
 
 int main(int argc, char** argv)
 {
-	//cout << "Start " << argv[1] << endl;
-	int MAX_CONNECTION_TRIES = 100;
+	UDPsocket sd;
+	IPaddress srvadd;
+	UDPpacket *p;
+	int rc = 0;
+	int numberOfRenderingClients = 1;
 
 	VideoCapture vid(argv[1]);
 	Mat img;
@@ -39,78 +28,130 @@ int main(int argc, char** argv)
 		return 1;
 	}
 	
-	int rc;	//Rueckgabewert
-	struct sockaddr_in addr; //IPv4 Adresse
-#ifdef __WIN32__
-	SOCKET s;
+	/* Initialize SDL_net */
+	if (SDLNet_Init() < 0)
 	{
-		WSADATA wsaData;
-		rc = WSAStartup(MAKEWORD(2,2), &wsaData);
+		fprintf(stderr, "SDLNet_Init: %s\n", SDLNet_GetError());
+		exit(EXIT_FAILURE);
 	}
-#else
-	int s;
-	memset(&addr, 0, sizeof addr);
-#endif
-
-	s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	addr.sin_family = AF_INET;
-#ifdef __WIN32__
-	addr.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
-#else
-	addr.sin_addr.s_addr = inet_addr("127.0.0.1");
-#endif
-	addr.sin_port = htons(11111);
-
-	int connection_tries = 0;
-	do
+	
+	/* Open a socket on random port */
+	if (!(sd = SDLNet_UDP_Open(0)))
 	{
-		connection_tries++;
-		rc = connect(s, (struct sockaddr*)&addr, sizeof(addr));
-		waitKey(100);
-	} while (rc < 0 && connection_tries <= MAX_CONNECTION_TRIES) ;
-
-	int numberOfRenderingClients = 1;
-
-	if (rc < 0)
+		fprintf(stderr, "SDLNet_UDP_Open: %s\n", SDLNet_GetError());
+		exit(EXIT_FAILURE);
+	}
+	
+	/* Resolve server name */
+	if (SDLNet_ResolveHost(&srvadd, "localhost", 2000) == -1)
 	{
-		cout << "Couldn't connect to Rendering Client. Max tries exceeded." << endl;
+		fprintf(stderr, "SDLNet_ResolveHost(%s %d): %s\n", argv[1], 
+atoi(argv[2]), SDLNet_GetError());
+		exit(EXIT_FAILURE);
+	}
+	
+	/* Allocate memory for the packet */
+	if (!(p = SDLNet_AllocPacket(9999999)))
+	{
+		fprintf(stderr, "SDLNet_AllocPacket: %s\n", SDLNet_GetError());
+		exit(EXIT_FAILURE);
+	}
+
+    img = imread(argv[1], CV_LOAD_IMAGE_COLOR);
+	
+	// send meta data
+	int meta_data[2] = {10, 10};//{(int) vid.get(CV_CAP_PROP_FRAME_WIDTH) / numberOfRenderingClients, (int) vid.get(CV_CAP_PROP_FRAME_HEIGHT)};
+	cout << meta_data[0] << " xXx " << meta_data[1] << endl;
+	Uint8* md_pointer = (Uint8*) &meta_data;
+	p->data = md_pointer;
+	p->address.host = srvadd.host;
+	p->address.port = srvadd.port;
+	p->len = sizeof(meta_data) + 1;
+	printf("meta p len: %d\n", p->len);
+	rc = SDLNet_UDP_Send(sd, -1, p);
+	if(rc == 0) 
+	{
+		printf("Sending metadata failed with code %i.\n", rc);
 		return 1;
 	}
-	else
-	{
-		int meta_data[2] = {vid.get(CV_CAP_PROP_FRAME_WIDTH) / numberOfRenderingClients, vid.get(CV_CAP_PROP_FRAME_HEIGHT)};
-		cout << meta_data[0] << " " << meta_data[1] << endl;
-		rc = send(s, (char*)meta_data, 2 * sizeof(int), 0);
-		for (;;)
+	
+	printf("img/img.data %d %d\n", (int) sizeof(img), (int) sizeof(img.data));
+	//send image to all rendering clients
+	Uint8* img_pointer = (Uint8*) &img.data;
+	p->data = img_pointer;
+	p->len = (img.total() * img.elemSize()) + 1;
+	
+								printf("\tmData: %d\n", (int) img.data[0]);
+				printf("\tmData: %d\n", (int) img.data[1]);
+				printf("\tmData: %d\n", (int) img.data[2]);
+				printf("\tmData: %d\n", (int) img.data[3]);
+				printf("\tmData: %d\n", (int) img.data[4]);
+				printf("\tmData: %d\n", (int) img.data[5]);
+				printf("\tmData: %d\n", (int) img.data[6]);
+				printf("\tmData: %d\n", (int) img.data[7]);
+				printf("\tmData: %d\n", (int) img.data[8]);
+				printf("\tmData: %d\n", (int) img.data[9]);
+				printf("\tmData: %d\n", (int) img.data[10]);
+				
+				printf("\tData: %d\n", (int) p->data[0]);
+				printf("\tData: %d\n", (int) p->data[1]);
+				printf("\tData: %d\n", (int) p->data[2]);
+				printf("\tData: %d\n", (int) p->data[3]);
+				printf("\tData: %d\n", (int) p->data[4]);
+				printf("\tData: %d\n", (int) p->data[5]);
+				printf("\tData: %d\n", (int) p->data[6]);
+				printf("\tData: %d\n", (int) p->data[7]);
+				printf("\tData: %d\n", (int) p->data[8]);
+				printf("\tData: %d\n", (int) p->data[9]);
+				printf("\tData: %d\n", (int) p->data[10]);
+				printf("\tData: %d\n", (int) p->data[11]);
+				printf("\tData: %d\n", (int) p->data[12]);
+				printf("\tData: %d\n", (int) p->data[13]);
+				printf("\tData: %d\n", (int) p->data[14]);
+				printf("\tData: %d\n", (int) p->data[15]);
+				printf("\tData: %d\n", (int) p->data[16]);
+				printf("\tData: %d\n", (int) p->data[17]);
+				printf("\tData: %d\n", (int) p->data[18]);
+				printf("\tData: %d\n", (int) p->data[19]);
+				printf("\tData: %d\n", (int) p->data[20]);
+				printf("\tData: %d\n", (int) p->data[21]);
+				printf("\tData: %d\n", (int) p->data[22]);
+				printf("\tData: %d\n", (int) p->data[23]);
+				printf("\tData: %d\n", (int) p->data[24]);
+				printf("\tData: %d\n", (int) p->data[25]);
+				printf("\tData: %d\n", (int) p->data[26]);
+				printf("\tData: %d\n", (int) p->data[27]);
+				printf("\tData: %d\n", (int) p->data[28]);
+				printf("\tData: %d\n", (int) p->data[29]);
+				printf("\tData: %d\n", (int) p->data[30]);
+				printf("\tData: %d\n", (int) p->data[31]);
+				printf("\tData: %d\n", (int) p->data[32]);
+				printf("\tData: %d\n", (int) p->data[33]);
+				printf("\tData: %d\n", (int) p->data[34]);
+				printf("\tData: %d\n", (int) p->data[35]);
+				printf("\tData: %d\n", (int) p->data[36]);
+				printf("\tData: %d\n", (int) p->data[37]);
+				printf("\tData: %d\n", (int) p->data[38]);
+				printf("\tData: %d\n", (int) p->data[39]);
+				printf("\tData: %d\n", (int) p->data[40]); 
+			
+///	for (;;)
+//	{
+		for (int i = 0; i < numberOfRenderingClients; ++i)
 		{
-			vid >> img;
-			if (!img.empty())
-			{
-				img = img.reshape(0,1);
-				for (int i = 0; i < numberOfRenderingClients; ++i)
-				{
-					#if DEBUG
-						//cout << "Position " << i * (img.total() * img.elemSize() / IMAGE_CHUNKS) << " with Length " << img.total() * img.elemSize() / IMAGE_CHUNKS << endl;
-					#endif
 
-					rc = send(s, (char*) img.data, img.total() * img.elemSize(), 0);
-					if (rc < 0)
-					{
-						printf("send failed with code %i %i...\nexit\n", rc, errno);
-						return 1;
-					}
-				}
-				waitKey(42);
+			//printf("p->len: %d\n", p->len);
+			rc = SDLNet_UDP_Send(sd, -1, p);
+			if (rc == 0)
+			{
+				printf("SDLNet_UDP_Send: %s\n", SDLNet_GetError());
+				return 1;
 			}
 			else
 			{
-				cout << "Couldn't read Image File." << endl;
-				return 1;
+				//printf("p len: %d\n", p->len);
 			}
 		}
-	}
-
-#ifdef __WIN32__
-	WSACleanup;
-#endif
+		waitKey(42);
+//	}
 }

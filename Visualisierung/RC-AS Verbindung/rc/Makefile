@@ -1,17 +1,17 @@
 ifeq ($(OS),Windows_NT)
 	CXX = gcc
-	SDL_LIB = -LC:/SDL2/x86_64-w64-mingw32/lib -lSDL2main -lSDL2 -lSDL2_image
+	SDL_LIB = -LC:/SDL2/x86_64-w64-mingw32/lib -lSDL2main -lSDL2 -lSDL2_net
 	SDL_INCLUDE = -IC:/SDL2/x86_64-w64-mingw32/include
 	LDFLAGS = -Wl,--stack,1000000000 -lmingw32 -lws2_32 -mwindows -mconsole $(SDL_LIB)
 	EXE = renderingClient.exe
 else
 	ifeq ($(shell uname),Linux)
 		CXX = gcc
-		SDL_LIB = -L/usr/lib -lSDL2 -Wl,-rpath=/usr/lib -lSDL2_image
+		SDL_LIB = -L/usr/lib -lSDL2 -Wl,-rpath=/usr/lib -lSDL2_net
 		SDL_INCLUDE = -I/usr/include
 		CXXFLAGS = -Wall -c -std=c99
 		LDFLAGS = $(SDL_LIB)
-		EXE = renderingClient
+		EXE = RenderingClient.app
 	endif
 
 	ifeq ($(shell uname), Darwin)
