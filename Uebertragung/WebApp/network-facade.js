@@ -99,7 +99,13 @@ NetworkFacade.prototype.sendData = function(data) {
 		sendDataFromHere(data);
 	}
 	else if(this.protocol == "WebSocket") {
-		this.connection.send(data);
+		if (this.connection.readyState == 1) {
+			this.connection.send(data);
+			return 0;
+		}
+		else {
+			return "Connection not open";
+		}
 	}
 	else {
 		// do nothing

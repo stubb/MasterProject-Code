@@ -32,8 +32,14 @@
 			xmlString += '<timestamp>' + timeStr + '</timestamp>';
 			xmlString += '<data>' + ua2text(canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data) + '</data>';
 			xmlString += '</package>';
-			nwF.sendData(xmlString);
-			console.log("Data sent!");
+			result = nwF.sendData(xmlString);
+			if (result == 0) {
+				console.log("Photo sent!");
+				toastr.success('Your photo was sent!');
+			}
+			else {
+				toastr.error(result);
+			}
 		};
 		
 		window.onbeforeunload = function() {
@@ -66,7 +72,7 @@
 		}
 
 		function takepicture() {
-			var canvas = document.getElementById('canvas');
+			var canvas = document.getElementById('preview_canvas');
 			canvas.width = document.getElementById('video').videoWidth;
 			canvas.height = document.getElementById('video').videoHeight;
 			canvas.getContext('2d').drawImage(document.getElementById('video'), 0, 0, document.getElementById('video').videoWidth, document.getElementById('video').videoHeight);
@@ -74,10 +80,10 @@
 		}
 	</script>
   <div id="container">
-	<video id="video"></video>
+	<video id="video" class="center"></video>
 	<button onclick="takepicture()">Take photo</button>
 	<button id="sendButton" onclick="sendFile()" disabled>Send</button>
-	<canvas id="canvas"></canvas>
+	<canvas id="preview_canvas" class="center"></canvas>
   </div>
 </body>
 </html>

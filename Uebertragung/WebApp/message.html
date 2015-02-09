@@ -8,17 +8,20 @@
 	<link rel="stylesheet" href="css/themes/jquery.mobile.icons.min.css" />
 	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile.structure-1.4.5.min.css" />
 	<link rel="stylesheet" href="css/client.css">
+	<link href="css/toastr/toastr.min.css" rel="stylesheet"/>
 	<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script> 
 	<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
 	<script src="network-websocket-adapter.js"></script>
 	<script src="network-facade.js"></script>
+	<script src="js/toastr/toastr.min.js"></script>
+	<script src="js/toastr/toastr_conf.js"></script>
 </head>
 <body>
 	<script type="text/javascript">
 		var nwF = new NetworkFacade("WebSocket");
 		nwF.init("ws://127.0.0.1:9002", "kili_localhost");
 		var xmlString = '<?xml version="1.0" encoding="UTF-8"?>';
-		
+			
 		var sendText = function() {
 			var time = new Date();
 			var timeStr = time.toLocaleTimeString();
@@ -28,9 +31,14 @@
 			xmlString += '<timestamp>' + timeStr + '</timestamp>';
 			xmlString += '<data>' + document.getElementById('text').value + '</data>';
 			xmlString += '</package>';
-			nwF.sendData(xmlString);
-			console.log("Data sent!");
-			document.getElementById('text').value = "Your message was sent!";
+			result = nwF.sendData(xmlString);
+			if (result == 0) {
+				console.log("Data sent!");
+				toastr.success('Your message was sent!');
+			}
+			else {
+				toastr.error(result);
+			}
 		};
 		
 		window.onbeforeunload = function() {
@@ -38,7 +46,7 @@
 		};
 	</script>
 	<div id="content_container">
-		<textarea id="text" placeholder="Your message!"></textarea>
+		<textarea id="text" class="center" placeholder="Your message!"></textarea>
 		<button type="button" onclick="sendText()">
 			<span>Send</span>
 		</button>	

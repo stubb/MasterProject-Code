@@ -8,11 +8,14 @@
 	<link rel="stylesheet" href="css/themes/jquery.mobile.icons.min.css" />
 	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile.structure-1.4.5.min.css" />
 	<link rel="stylesheet" href="css/client.css">
+	<link href="css/toastr/toastr.min.css" rel="stylesheet"/>
 	<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script> 
 	<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
 	<script src="js/helper.js"></script>
 	<script src="network-websocket-adapter.js"></script>
 	<script src="network-facade.js"></script>
+	<script src="js/toastr/toastr.min.js"></script>
+	<script src="js/toastr/toastr_conf.js"></script>
 </head>
 <body>
 	<script type="text/javascript">
@@ -21,20 +24,18 @@
 		var reader = new FileReader();
 		var type = null;
 		var imgData = "";
-		var width = 302;
-		var height = 150;
 		
 	</script>
 	<div id="content_container">
-		<canvas id="canvas" width="302" height="150"></canvas>
+		<canvas id="preview_canvas" class="center"></canvas>
 		<form>
 			<input type="file" accept="image/*" autofocus onchange="loadFile(event)">
 			<input type="button" onclick="sendFile()" value="Send"/>
 		</form>
 		<script>			
 			var loadFile = function(event) {
-				var canvas = document.getElementById('canvas');
-			    var ctx = canvas.getContext('2d');
+				var canvas = document.getElementById('preview_canvas');
+				var ctx = canvas.getContext('2d');
 				var img = new Image;
 				type = event.target.files[0].type;
 				img.src = URL.createObjectURL(event.target.files[0]);
@@ -59,8 +60,14 @@
 				xmlString += '<timestamp>' + timeStr + '</timestamp>';
 				xmlString += '<data>' + imgData + '</data>';
 				xmlString += '</package>';
-				nwF.sendData(xmlString);
-				console.log("Data sent!");
+				result = nwF.sendData(xmlString);
+				if (result == 0) {
+					console.log("Photo sent!");
+					toastr.success('Your photo was sent!');
+				}
+				else {
+					toastr.error(result);
+				}
 			};
 			
 			window.onbeforeunload = function() {
