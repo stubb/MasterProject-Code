@@ -51,6 +51,7 @@
 			var sendFile = function() {
 				var time = new Date();
 				var timeStr = time.toLocaleTimeString();
+				var canvas = document.getElementById('preview_canvas');
 				var xmlString = '<?xml version="1.0" encoding="UTF-8"?>';
 				xmlString += '<package>';
 				xmlString += '<user>' + nwF.localUserName + '</user>';
