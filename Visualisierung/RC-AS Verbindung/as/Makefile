@@ -1,3 +1,6 @@
+SOURCES = as.cpp tinyxml2.cpp
+OBJECTS=$(SOURCES:.cpp=.o)
+
 ifeq ($(OS),Windows_NT)
 	CXX = g++
 	OPENCV_LIB = -LC:/OpenCV/x64/mingw/lib -lopencv_core248 -lopencv_highgui248 -lopencv_imgproc248
@@ -13,8 +16,10 @@ else
 		SDL_INCLUDE = -I/usr/include
 		OPENCV_INCLUDE =`pkg-config --cflags opencv`
 		OPENCV_LIB =`pkg-config --libs opencv`
-		LDFLAGS = $(SDL_LIB) $(OPENCV_LIB)
-		EXE = ApplicationServer.app
+		WEBSOCKET_INCLUDE =-I/usr/include
+		WEBSOCKET_LIB =-lboost_system
+		LDFLAGS = $(SDL_LIB) $(OPENCV_LIB) $(WEBSOCKET_LIB)
+		EXE =ApplicationServer.app
 	endif
 
 	ifeq ($(shell uname), Darwin)
@@ -25,14 +30,15 @@ else
 	endif
 endif
 
-CXXFLAGS = -Wall -c -std=c++11 $(SDL_INCLUDE) $(OPENCV_INCLUDE)
+CXXFLAGS = -Wall -c -std=c++11 $(SDL_INCLUDE) $(OPENCV_INCLUDE) $(WEBSOCKET_INCLUDE)
 
-all: $(EXE)
 
-$(EXE): ApplicationServer.o
-	$(CXX) $< $(LDFLAGS) -o $@
+all: $(SOURCES) $(EXE)
 
-ApplicationServer.o: as.cpp
+$(EXE): $(OBJECTS) 
+	$(CXX) $(LDFLAGS) $(OBJECTS) -o $@
+	
+.cpp.o:
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 clean:
