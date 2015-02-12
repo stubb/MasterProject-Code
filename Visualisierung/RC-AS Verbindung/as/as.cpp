@@ -1,6 +1,7 @@
 #include <iostream>
 #include <unistd.h>
 #include <string>
+#include <inttypes.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -49,7 +50,7 @@ void on_message(websocketpp::connection_hdl hdl, server::message_ptr msg) {
 	{
 		XMLElement* data = document.FirstChildElement( "package" )->FirstChildElement( "data" );
 		
-		int pixel_data[image_dimensions[0] * image_dimensions[1] * NUMBER_OF_COLOR_CHANNELS];
+		Uint8 pixel_data[image_dimensions[0] * image_dimensions[1] * NUMBER_OF_COLOR_CHANNELS];
 		char current_pixel_value_buffer[4];
 		current_pixel_value_buffer[4] = '\0';
 		
@@ -57,7 +58,7 @@ void on_message(websocketpp::connection_hdl hdl, server::message_ptr msg) {
 		{
 			std::strncpy(current_pixel_value_buffer, data->GetText()+i*3, 3);
 			char * pEnd;
-			pixel_data[i] = strtol(current_pixel_value_buffer, &pEnd, 10);
+			pixel_data[i] = (Uint8) strtol(current_pixel_value_buffer, &pEnd, 10);
 		}
 		
 #if DEBUG
@@ -70,6 +71,7 @@ void on_message(websocketpp::connection_hdl hdl, server::message_ptr msg) {
 			
 		for (int i = 0; i < NUMBER_OF_RENDERING_CLIENTS; ++i)
 		{
+			printf("hiho\n");
 			rc = SDLNet_TCP_Send (tcpsock, pixel_data, (image_dimensions[0] * image_dimensions[1] * NUMBER_OF_COLOR_CHANNELS) + 1);
 			if(rc < image_dimensions[0] * image_dimensions[1] * NUMBER_OF_COLOR_CHANNELS) 
 			{

@@ -5,6 +5,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_net.h>
 #include <string.h>
+#include <inttypes.h>
 
 #define DEBUG 1
 #define NUMBER_OF_COLOR_CHANNELS 3
@@ -140,10 +141,11 @@ int main(int argc, char *argv[])
 
 	for (int i = 0; i < ds.num_displays; ++i)
 	{
-		ds.display[i].texture = SDL_CreateTexture(ds.display[i].renderer, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STREAMING, meta_data[0], meta_data[1]);
+		ds.display[i].texture = SDL_CreateTexture(ds.display[i].renderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STREAMING, meta_data[0], meta_data[1]);
 	}
 
-	int img_data[meta_data[0] * meta_data[1] * NUMBER_OF_COLOR_CHANNELS];
+	Uint8 img_data[(meta_data[0] * meta_data[1] * NUMBER_OF_COLOR_CHANNELS) + 1];
+	
 	while (!PollEvents())
 	{
 		int numready = SDLNet_CheckSockets(set, 1000);
@@ -156,15 +158,16 @@ int main(int argc, char *argv[])
 			printf("There are %d sockets with activity!\n",numready);
 			// check all sockets with SDLNet_SocketReady and handle the active ones.
 			if(SDLNet_SocketReady(client)) {
-				rc = SDLNet_TCP_Recv(client, img_data, meta_data[0] * meta_data[1] * NUMBER_OF_COLOR_CHANNELS);
+				rc = SDLNet_TCP_Recv(client, img_data, (meta_data[0] * meta_data[1] * NUMBER_OF_COLOR_CHANNELS) + 1);
 				
-#if DEBUG
-				for(int i = 0; i < meta_data[0] * meta_data[1] * NUMBER_OF_COLOR_CHANNELS; ++i) {
-					printf("%d\n", img_data[i]);
-				}
-#endif
-				if (rc > 0)
+				if (rc == (meta_data[0] * meta_data[1] * NUMBER_OF_COLOR_CHANNELS) + 1)
 				{
+					#if DEBUG
+					for(int i = 0; i < meta_data[0] * meta_data[1] * NUMBER_OF_COLOR_CHANNELS; ++i) {
+						printf("%d\n", img_data[i]);
+					}
+					#endif
+
 					for (int i = 0; i < ds.num_displays; ++i)
 					{
 						SDL_Rect slice = {i * meta_data[0] / ds.num_displays, 0, meta_data[0] / ds.num_displays, meta_data[0]};
@@ -177,11 +180,11 @@ int main(int argc, char *argv[])
 						SDL_RenderCopy(ds.display[i].renderer, ds.display[i].texture, &slice, NULL);			
 						SDL_RenderPresent(ds.display[i].renderer);
 					}
+
 				}
 				else {
 					printf("\nrecv failed with code %i %i...exit\n", rc, errno);
-					return 1;
-				}
+				} 
 			}
 		}
 	}
