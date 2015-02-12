@@ -12,7 +12,9 @@
 #include "tinyxml2.h"
 
 
-#define DEBUG 0
+#define DEBUG 1
+#define NUMBER_OF_COLOR_CHANNELS 3
+#define NUMBER_OF_RENDERING_CLIENTS 1
 
 using namespace cv;
 using namespace std;
@@ -25,37 +27,51 @@ IPaddress ip;
 TCPsocket tcpsock;
 
 int rc = 0;
-int numberOfRenderingClients = 1;
 
 void on_message(websocketpp::connection_hdl hdl, server::message_ptr msg) {
 	XMLDocument document;
 	document.Parse(msg->get_payload().c_str());
 	
 	//TODO alles :D
-	XMLElement* width = document.FirstChildElement( "package" )->FirstChildElement( "width" );
-	XMLElement* height = document.FirstChildElement( "package" )->FirstChildElement( "height" );
-	std::cout << width->GetText() << " xxx " << height->GetText() << std::endl;
+	//get meta data
+	int image_dimensions[2] = {0};
+	document.FirstChildElement( "package" )->FirstChildElement( "width" )->QueryIntText( &image_dimensions[0] );
+	document.FirstChildElement( "package" )->FirstChildElement( "height" )->QueryIntText( &image_dimensions[1] );
+	std::cout << image_dimensions[0] << " " << image_dimensions[1] << std::endl;
 	
-	// send meta data	
-	int meta_data[2] = {0};
-	sscanf(width->GetText(), "%d", &meta_data[0]);
-	sscanf(height->GetText(), "%d", &meta_data[1]);
-	std::cout << meta_data[0] << " " << meta_data[1] << std::endl;
-	
-	rc = SDLNet_TCP_Send (tcpsock, meta_data, sizeof(int) * 2);
-	if(rc < sizeof(int) * 2) 
+	// send meta data
+	rc = SDLNet_TCP_Send (tcpsock, image_dimensions, sizeof(int) * 2);
+	if(rc < (signed) sizeof(int) * 2) 
 	{
 		printf("Sending metadata failed with code %i.\n", rc);
 	}
 	else
 	{
 		XMLElement* data = document.FirstChildElement( "package" )->FirstChildElement( "data" );
-		std::cout << data->GetText() << std::endl;
-				
-		for (int i = 0; i < numberOfRenderingClients; ++i)
+		
+		int pixel_data[image_dimensions[0] * image_dimensions[1] * NUMBER_OF_COLOR_CHANNELS];
+		char current_pixel_value_buffer[4];
+		current_pixel_value_buffer[4] = '\0';
+		
+		for (int i = 0; i < image_dimensions[0] * image_dimensions[1] * NUMBER_OF_COLOR_CHANNELS; ++i)
 		{
-			rc = SDLNet_TCP_Send (tcpsock, data->GetText(), meta_data[0] * meta_data[1] * 4);
-			if(rc < meta_data[0] * meta_data[1] * 4) 
+			std::strncpy(current_pixel_value_buffer, data->GetText()+i*3, 3);
+			char * pEnd;
+			pixel_data[i] = strtol(current_pixel_value_buffer, &pEnd, 10);
+		}
+		
+#if DEBUG
+		for (int i = 0; i < image_dimensions[0] * image_dimensions[1] * NUMBER_OF_COLOR_CHANNELS; ++i)
+		{
+			printf("%d\n", pixel_data[i]);
+		}
+#endif
+			
+			
+		for (int i = 0; i < NUMBER_OF_RENDERING_CLIENTS; ++i)
+		{
+			rc = SDLNet_TCP_Send (tcpsock, pixel_data, (image_dimensions[0] * image_dimensions[1] * NUMBER_OF_COLOR_CHANNELS) + 1);
+			if(rc < image_dimensions[0] * image_dimensions[1] * NUMBER_OF_COLOR_CHANNELS) 
 			{
 				printf("Sending data failed with code %i.\n", rc);
 			}

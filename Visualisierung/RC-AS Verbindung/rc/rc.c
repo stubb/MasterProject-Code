@@ -7,7 +7,7 @@
 #include <string.h>
 
 #define DEBUG 1
-#define NUMBER_OF_COLOR_CHANNELS 4
+#define NUMBER_OF_COLOR_CHANNELS 3
 
 struct DisplayInfo {
 	SDL_Window *window;
@@ -140,10 +140,10 @@ int main(int argc, char *argv[])
 
 	for (int i = 0; i < ds.num_displays; ++i)
 	{
-		ds.display[i].texture = SDL_CreateTexture(ds.display[i].renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, meta_data[0], meta_data[1]);
+		ds.display[i].texture = SDL_CreateTexture(ds.display[i].renderer, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STREAMING, meta_data[0], meta_data[1]);
 	}
 
-	char img_data[meta_data[0] * meta_data[1] * NUMBER_OF_COLOR_CHANNELS];
+	int img_data[meta_data[0] * meta_data[1] * NUMBER_OF_COLOR_CHANNELS];
 	while (!PollEvents())
 	{
 		int numready = SDLNet_CheckSockets(set, 1000);
@@ -158,10 +158,11 @@ int main(int argc, char *argv[])
 			if(SDLNet_SocketReady(client)) {
 				rc = SDLNet_TCP_Recv(client, img_data, meta_data[0] * meta_data[1] * NUMBER_OF_COLOR_CHANNELS);
 				
-				printf("sizeof one ele %d\n", sizeof(&img_data[1]));
-				for(int i = 0; i < 20; ++i) {
-					printf("%c\n", img_data[i]);
+#if DEBUG
+				for(int i = 0; i < meta_data[0] * meta_data[1] * NUMBER_OF_COLOR_CHANNELS; ++i) {
+					printf("%d\n", img_data[i]);
 				}
+#endif
 				if (rc > 0)
 				{
 					for (int i = 0; i < ds.num_displays; ++i)
