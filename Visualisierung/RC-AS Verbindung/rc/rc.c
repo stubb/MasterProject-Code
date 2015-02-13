@@ -144,12 +144,12 @@ int main(int argc, char *argv[])
 		ds.display[i].texture = SDL_CreateTexture(ds.display[i].renderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STREAMING, meta_data[0], meta_data[1]);
 	}
 
-	Uint8 img_data[(meta_data[0] * meta_data[1] * NUMBER_OF_COLOR_CHANNELS) + 1];
+	char img_data[(meta_data[0] * meta_data[1] * NUMBER_OF_COLOR_CHANNELS) + 1];
 	
 	while (!PollEvents())
 	{
 		int numready = SDLNet_CheckSockets(set, 1000);
-		if(numready==-1) {
+		if(numready == -1) {
 			printf("SDLNet_CheckSockets: %s\n", SDLNet_GetError());
 			//most of the time this is a system error, where perror might help you.
 			perror("SDLNet_CheckSockets");
@@ -158,33 +158,33 @@ int main(int argc, char *argv[])
 			printf("There are %d sockets with activity!\n",numready);
 			// check all sockets with SDLNet_SocketReady and handle the active ones.
 			if(SDLNet_SocketReady(client)) {
-				rc = SDLNet_TCP_Recv(client, img_data, (meta_data[0] * meta_data[1] * NUMBER_OF_COLOR_CHANNELS) + 1);
-				
-				if (rc == (meta_data[0] * meta_data[1] * NUMBER_OF_COLOR_CHANNELS) + 1)
+
+				int numberOfPixelValues = NUMBER_OF_COLOR_CHANNELS * meta_data[0] * meta_data[1];
+				int position = 0;
+				do
 				{
-					#if DEBUG
-					for(int i = 0; i < meta_data[0] * meta_data[1] * NUMBER_OF_COLOR_CHANNELS; ++i) {
-						printf("%d\n", img_data[i]);
-					}
-					#endif
-
-					for (int i = 0; i < ds.num_displays; ++i)
+					rc = SDLNet_TCP_Recv(client, img_data + position, numberOfPixelValues - position);
+					if (rc < 0)
 					{
-						SDL_Rect slice = {i * meta_data[0] / ds.num_displays, 0, meta_data[0] / ds.num_displays, meta_data[0]};
-						if (SDL_UpdateTexture(ds.display[i].texture, NULL, (void *) img_data, meta_data[0] * NUMBER_OF_COLOR_CHANNELS) < 0)
-						{
-							fprintf(stderr, "SDL_UpdateTexture: %s\n", SDL_GetError());
-							exit(EXIT_FAILURE);
-						}
-						SDL_RenderClear(ds.display[i].renderer);
-						SDL_RenderCopy(ds.display[i].renderer, ds.display[i].texture, &slice, NULL);			
-						SDL_RenderPresent(ds.display[i].renderer);
+						printf("SDLNet_TCP_Recv failed with Code %i %i ...exit\n", rc, errno);
+						return 1;
 					}
+					position += rc;
 
+				} while (rc != 0) ;
+
+				for (int i = 0; i < ds.num_displays; ++i)
+				{
+					SDL_Rect slice = {i * meta_data[0] / ds.num_displays, 0, meta_data[0] / ds.num_displays, meta_data[0]};
+					if (SDL_UpdateTexture(ds.display[i].texture, NULL, (void *) img_data, meta_data[0] * NUMBER_OF_COLOR_CHANNELS) < 0)
+					{
+						fprintf(stderr, "SDL_UpdateTexture: %s\n", SDL_GetError());
+						exit(EXIT_FAILURE);
+					}
+					SDL_RenderClear(ds.display[i].renderer);
+					SDL_RenderCopy(ds.display[i].renderer, ds.display[i].texture, &slice, NULL);			
+					SDL_RenderPresent(ds.display[i].renderer);
 				}
-				else {
-					printf("\nrecv failed with code %i %i...exit\n", rc, errno);
-				} 
 			}
 		}
 	}
