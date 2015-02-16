@@ -10,14 +10,10 @@ ifeq ($(OS),Windows_NT)
 else
 	ifeq ($(shell uname),Linux)
 		CXX = g++
-		SDL_LIB = -L/usr/lib -lSDL2 -lSDL2_net -Wl,-rpath=/usr/lib
-		SDL_INCLUDE = -I/usr/include
-		OPENCV_INCLUDE =`pkg-config --cflags opencv`
-		OPENCV_LIB =`pkg-config --libs opencv`
-		WEBSOCKET_INCLUDE =-I/usr/include
-		WEBSOCKET_LIB =-lboost_system
-		LDFLAGS = $(WEBSOCKET_LIB) $(SDL_LIB) $(OPENCV_LIB) 
-		EXE =ApplicationServer.app
+		LIBWEBSOCKETS_INCLUDE = -I/usr/include
+		LIBWEBSOCKETS_LIB = -lwebsockets
+		LDFLAGS = $(LIBWEBSOCKETS_LIB)
+		EXE = Server.app
 	endif
 
 	ifeq ($(shell uname), Darwin)
