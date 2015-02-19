@@ -33,7 +33,8 @@ NetworkFacade.prototype.init = function(server, localName) {
 		connectFromHere(this.remoteUrl, this.localUserName);
 	}
 	else if (this.protocol == "WebSocket") {
-		this.connection = new WebSocket(this.remoteUrl);
+		// NOTE: hardcoded sub-protocol for websockets
+		this.connection = new WebSocket(this.remoteUrl, 'callback_save_data');
 		
 		this.connection.onopen = function() {
 			console.log("Success, connected to " + url);
