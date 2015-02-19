@@ -1,13 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <getopt.h>
 #include <libwebsockets.h>
 
 #ifdef __linux__
 	#include <cstring>
 #endif
 
-static int 
-callback_http(struct libwebsocket_context * that,
+static int callback_http(struct libwebsocket_context * that,
 	struct libwebsocket *wsi,
 	enum libwebsocket_callback_reasons reason, void *user,
 	void *in, size_t len)
@@ -22,7 +22,7 @@ static int callback_save_data(struct libwebsocket_context * that,
 {
 	switch (reason) {
 	case LWS_CALLBACK_ESTABLISHED: // just log message that someone is connecting
-		printf("connection established\n");
+		printf("Connection established\n");
 		break;
 	case LWS_CALLBACK_RECEIVE: { 
 		printf("received data:%zu: %s\n Mach was damit!", len, (char *) in);
@@ -45,14 +45,21 @@ static struct libwebsocket_protocols protocols[] = {
 	{
 		"callback_save_data", // protocol name - very important!
 		callback_save_data,   // callback
-		0                          // we don't use any per session data
+		0                     // we don't use any per session data
 	},
 	{
 		NULL, NULL, 0   /* End of list */
 	}
 };
 
-int main(void) {
+static struct option options[] = {
+	{ "help",	no_argument,		NULL, 'h' },
+	{ "port",	required_argument,	NULL, 'p' },
+	{ NULL, 0, 0, 0 }
+};
+
+int main(int argc, char **argv) {
+	int n = 0;
 	struct libwebsocket_context *context;
 	// server url will be http://localhost:9000
 	// we're not using ssl
@@ -63,6 +70,21 @@ int main(void) {
 	info.gid = -1;
 	info.uid = -1;
 	info.protocols = protocols;
+
+	while (n >= 0) {
+		n = getopt_long(argc, argv, "ci:hsp:d:", options, NULL);
+		if (n < 0)
+			continue;
+		switch (n) {
+		case 'p':
+			info.port = atoi(optarg);
+			break;
+		case 'h':
+			fprintf(stderr, "Usage: libwebsockets-test-fraggle "
+					"[--port=<p>]\n");
+			exit(1);
+		}
+	}
 
 	// create libwebsocket context representing this server
 	context = libwebsocket_create_context(&info);
