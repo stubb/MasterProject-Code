@@ -21,6 +21,7 @@
 	<script type="text/javascript">
 		var nwF = new NetworkFacade("WebSocket");
 		nwF.init("ws://192.168.178.107:9000", "kili_localhost");
+
 		var reader = new FileReader();
 		var type = null;
 		var imgData = "";
@@ -40,11 +41,20 @@
 				type = event.target.files[0].type;
 				img.src = URL.createObjectURL(event.target.files[0]);
 				img.onload = function() {
-					canvas.height = img.height;
-					canvas.width = img.width;
+					if (img.height > 720) {
+						canvas.height = 720;
+					else {
+						canvas.height = img.height;
+					}
+					if (canvas.width > 1280) {
+						canvas.width = 1280;
+					}
+					else {
+						canvas.width = img.width;
+					}
 					var ctx = canvas.getContext('2d');
 					ctx.drawImage(img, 0, 0);
-					imgData = ua2text(ctx.getImageData(0, 0, canvas.width, canvas.height).data);
+					imgData = canvas.toDataURL("image/png");
 				}
 			};
 			
