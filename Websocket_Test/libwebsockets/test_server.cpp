@@ -1,11 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <iostream>
 #include <getopt.h>
 #include <libwebsockets.h>
 
 #ifdef __linux__
 	#include <cstring>
 #endif
+
+using namespace std;
+
+unsigned char buf[LWS_SEND_BUFFER_PRE_PADDING + 1280 * 720 * 4 +  LWS_SEND_BUFFER_POST_PADDING];
+unsigned int position = 0;
 
 static int callback_http(struct libwebsocket_context * that,
 	struct libwebsocket *wsi,
@@ -21,11 +27,24 @@ static int callback_save_data(struct libwebsocket_context * that,
 	void *user, void *in, size_t len)
 {
 	switch (reason) {
-	case LWS_CALLBACK_ESTABLISHED: // just log message that someone is connecting
-		printf("Connection established\n");
+	case LWS_CALLBACK_ESTABLISHED:
+		cout << "Connection established" << endl;
 		break;
-	case LWS_CALLBACK_RECEIVE: { 
-		printf("received data:%zu: %s\n Mach was damit!", len, (char *) in);
+	case LWS_CALLBACK_RECEIVE: {
+		memcpy(buf + position, in, len);
+		position += len;
+		const size_t remaining = libwebsockets_remaining_packet_payload(wsi);
+		if (remaining == 0) {
+			cout <<  "Received data:" << position << endl;
+			cout << buf << endl;
+			cout << "Mach hier was damit!" << endl;
+			// reset position
+			position = 0;
+		}
+		break;
+	}
+	case LWS_CALLBACK_CLOSED: {
+		cout << "Connection closed" << endl;
 		break;
 	}
 	default:
@@ -36,16 +55,16 @@ static int callback_save_data(struct libwebsocket_context * that,
 }
 
 static struct libwebsocket_protocols protocols[] = {
-	/* first protocol must always be HTTP handler */
 	{
 		"http-only",   // name
 		callback_http, // callback
 		0              // per_session_data_size
 	},
 	{
-		"callback_save_data", // protocol name - very important!
-		callback_save_data,   // callback
-		0                     // we don't use any per session data
+		"callback_save_data",
+		callback_save_data,
+		0,
+		65536				// rx_buffer_size
 	},
 	{
 		NULL, NULL, 0   /* End of list */
@@ -80,7 +99,7 @@ int main(int argc, char **argv) {
 			info.port = atoi(optarg);
 			break;
 		case 'h':
-			fprintf(stderr, "Usage: libwebsockets-test-fraggle "
+			fprintf(stderr, "Usage: Applicationserver "
 					"[--port=<p>]\n");
 			exit(1);
 		}
