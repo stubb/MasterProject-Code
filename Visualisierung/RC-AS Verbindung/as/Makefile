@@ -7,7 +7,9 @@ ifeq ($(OS),Windows_NT)
 	OPENCV_INCLUDE = -IC:/OpenCV/include
 	SDL_LIB = -LC:/SDL2/x86_64-w64-mingw32/lib -lSDL2main -lSDL2 -lSDL2_net
 	SDL_INCLUDE = -IC:/SDL2/x86_64-w64-mingw32/include
-	LDFLAGS = -Wl,--stack,1000000000 -lmingw32 -lws2_32 -mwindows -mconsole $(SDL_LIB) $(OPENCV_LIB)
+	LIBWEBSOCKET_LIB = -LC:/MinGW64/libwebsocket/lib -lwebsockets
+	LIBWEBSOCKET_INCLUDE = -IC:/MinGW64/libwebsocket/include
+	LDFLAGS = -Wl,--stack,1000000000 -lmingw32 -lws2_32 -mwindows -mconsole $(SDL_LIB) $(OPENCV_LIB) $(LIBWEBSOCKET_LIB)
 	EXE = ApplicationServer.exe
 else
 	ifeq ($(shell uname),Linux)
@@ -30,7 +32,7 @@ else
 	endif
 endif
 
-CXXFLAGS = -Wall -c -std=c++11 $(SDL_INCLUDE) $(OPENCV_INCLUDE)
+CXXFLAGS = -Wall -c -std=c++11 $(SDL_INCLUDE) $(OPENCV_INCLUDE) $(LIBWEBSOCKET_INCLUDE)
 
 
 all: $(SOURCES) $(EXE)

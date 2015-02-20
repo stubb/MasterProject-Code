@@ -1,34 +1,18 @@
-#include <iostream>
-#include <unistd.h>
-#include <string>
-#include <inttypes.h>
-#include <opencv2/core/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_net.h>
-#include <websocketpp/config/asio_no_tls.hpp>
-#include <websocketpp/server.hpp>
-
-#include "tinyxml2.h"
-
+/*	Debug Mode.	*/
 #define DEBUG 1
+
+/*	Picture Settings.	*/
 #define NUMBER_OF_COLOR_CHANNELS 3
-#define NUMBER_OF_RENDERING_CLIENTS 1
 
-using namespace cv;
-using namespace std;
-using namespace tinyxml2;
+/*	Maximum Connection tries for Connection to RC.	*/
+#define MAX_CONNECTIONS_TRIES 2
 
-typedef websocketpp::server<websocketpp::config::asio> server;
-server receive_server;
+/*	User Functions.	*/
+#include "Rendering_Client.h"
+#include "MonkeyMediaProcessor.h"
+#include "as.h"
 
-IPaddress ip;
-TCPsocket tcpsock;
-
-int rc = 0;
-
-void on_message(websocketpp::connection_hdl hdl, server::message_ptr msg) {
+/*void on_message(websocketpp::connection_hdl hdl, server::message_ptr msg) {
 	tinyxml2::XMLDocument document;
 	document.Parse(msg->get_payload().c_str());
 	
@@ -74,63 +58,78 @@ void on_message(websocketpp::connection_hdl hdl, server::message_ptr msg) {
 			}
 		}
 	}
-}
-
-static int PollEvents()
-{
-	SDL_Event event;
-	
-	while (SDL_PollEvent(&event))
-	{
-		if (event.type == SDL_QUIT)
-		{
-			return 1;	
-		}
-		else if (event.type == SDL_KEYDOWN)
-		{
-			if (event.key.keysym.sym == SDLK_ESCAPE)
-			{
-				return 1;
-			}
-		}
-		else if (event.type == SDL_WINDOWEVENT)
-		{
-			//printf("WinEvent!\n");
-		}
-	}
-	return 0;
-}
+}*/
 
 int main(int argc, char** argv)
 {
-	char* host_ip = "localhost";
-	if(argc > 1) {
-		host_ip = argv[1];
-	}
-	
-	if (SDLNet_Init() < 0)
-	{
-		fprintf(stderr, "SDLNet_Init: %s\n", SDLNet_GetError());
-		exit(EXIT_FAILURE);
-	}
-	
-	if(SDLNet_ResolveHost(&ip, host_ip, 2000)==-1) {
-		printf("SDLNet_ResolveHost: %s\n", SDLNet_GetError());
-		exit(1);
+	int NUMBER_OF_RENDERING_CLIENTS = 1;
+	vector<Rendering_Client> *rendering_clients = new vector<Rendering_Client>();
+
+	int return_code = 0;
+	int libws_return_code = 0;
+
+	struct libwebsocket_context *context;
+	struct lws_context_creation_info info;
+	memset(&info, 0, sizeof info);
+	info.port = 9000;
+	info.gid = -1;
+	info.uid = -1;
+	info.protocols = protocols;
+
+	vector<char*> *host_ips = new vector<char*>();
+	host_ips->push_back("127.0.0.1");
+
+	int host_port = 2000;
+
+	while (libws_return_code >= 0) {
+		libws_return_code = getopt_long(argc, argv, "ci:hsp:d:", options, NULL);
+		if (libws_return_code < 0)
+			continue;
+		switch (libws_return_code) {
+		case 'p':
+			info.port = atoi(optarg);
+			break;
+		case 'y':
+			host_port = atoi(optarg);
+			break;
+		case 'h':
+			cerr << "Usage: Applicationserver [--port=<p>]\n" << endl;
+			exit(1);
+		}
 	}
 
-	tcpsock=SDLNet_TCP_Open(&ip);
-	if(!tcpsock) {
-		printf("SDLNet_TCP_Open: %s\n", SDLNet_GetError());
-		exit(2);
+	#if DEBUG
+		for (unsigned int i = 0; i < host_ips->size(); ++i)
+			cout << "Host IP: " << host_ips->at(i) << endl;
+		cout << "Host Port: " << host_port << endl;
+	#endif
+
+	return_code = init_rc_connections(rendering_clients, host_ips, host_port);
+
+	if (return_code == 0 && rendering_clients->size() > 0)
+	{
+		libws_return_code = 0;
+		context = libwebsocket_create_context(&info);
+		if (context == NULL)
+		{
+			cerr << "libwebsocket init failed" << endl;
+			return EXIT_FAILURE;
+		}
+		else
+		{
+			mmp = new MonkeyMediaProcessor(NUMBER_OF_RENDERING_CLIENTS);
+			while (!libws_return_code)
+			{
+				libws_return_code = libwebsocket_service(context, 100);
+			}
+		}
 	}
-	websocketpp::lib::error_code error;
-	receive_server.set_message_handler(&on_message);
-	receive_server.init_asio(error);
-	std::cout << error << std::endl;
-	receive_server.listen(9002, error);
-	std::cout << error << std::endl;
-	receive_server.start_accept();
-	receive_server.run();
-	//receive_server.stop_listening();
+	else
+	{
+		cerr << "Couldn't establish Connections. Shutting down " << argv[0] << "." << endl;
+		return(return_code);
+	}
+
+	libwebsocket_context_destroy(context);
+	return(EXIT_SUCCESS);
 }
