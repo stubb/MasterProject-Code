@@ -30,13 +30,13 @@ else
 	endif
 endif
 
-CXXFLAGS = -Wall -c -std=c++11 $(SDL_INCLUDE) $(OPENCV_INCLUDE) $(WEBSOCKET_INCLUDE)
+CXXFLAGS = -Wall -c -std=c++11 $(SDL_INCLUDE) $(OPENCV_INCLUDE)
 
 
 all: $(SOURCES) $(EXE)
 
 $(EXE): $(OBJECTS) 
-	$(CXX) $(LDFLAGS) $(OBJECTS) -o $@
+	$(CXX) $(OBJECTS) -o $@ $(LDFLAGS)
 	
 .cpp.o:
 	$(CXX) $(CXXFLAGS) $< -o $@
