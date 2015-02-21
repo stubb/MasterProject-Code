@@ -35,45 +35,34 @@
 		</form>
 		<canvas id="data_canvas"></canvas>
 		<script>
-			var resizeElement = function(obj, maxWidth) {
-				var ratio = 0;
-				var new_width = obj.width;
-				var new_height = obj.height;
-				
-				if (obj.width > maxWidth)
-				{
-					ratio = obj.width / maxWidth;
-					new_width = maxWidth;
-					new_height = (obj.height / ratio);
-				}
-				return [new_width, new_height];
-
-			};
-
 			var loadFile = function(event) {
 				var canvas = document.getElementById('data_canvas');
+				var pre_canvas = document.getElementById('preview_canvas');
 				var ctx = canvas.getContext('2d');
-				var img = new Image;
+				var ctx2 = pre_canvas.getContext("2d");
+				var img = new Image();
+				var image = new Image();
 				type = event.target.files[0].type;
 				img.src = URL.createObjectURL(event.target.files[0]);
 				img.onload = function() {
-					if (img.height > 720) {
-						canvas.height = 720;
-					}
-					else {
-						canvas.height = img.height;
-					}
 					if (canvas.width > 1280) {
 						canvas.width = 1280;
 					}
 					else {
 						canvas.width = img.width;
 					}
+					canvas.height = img.height;
 					size = resizeElement(img, 1280);
-					console.log("new size: " + size[0] + " x " + size[1]);
 					var ctx = canvas.getContext('2d');
 					ctx.drawImage(img, 0, 0, size[0], size[1]);
 					imgData = canvas.toDataURL("image/png");
+					image.src = imgData;
+					console.log($(window).width());
+					size2 = resizeElement(image, $(window).width());
+					var ctx2 = pre_canvas.getContext("2d");
+					ctx2.drawImage(image, 0, 0);
+					pre_canvas.width = size2[0];
+					pre_canvas.height = size2[1];
 				}
 			};
 			

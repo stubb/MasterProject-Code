@@ -6,3 +6,17 @@ var ua2text = function(ua) {
 	}
 	return s;
 };
+
+var resizeElement = function(obj, maxWidth) {
+	var ratio = 0;
+	var new_width = obj.width;
+	var new_height = obj.height;
+	if (obj.width > maxWidth)
+	{
+		ratio = obj.width / maxWidth;
+		new_width = maxWidth;
+		new_height = (obj.height / ratio);
+	}
+	console.log("new size: " + new_width + " x " + new_height);
+	return [new_width, new_height];
+};
