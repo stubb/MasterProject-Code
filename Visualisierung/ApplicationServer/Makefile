@@ -18,9 +18,9 @@ else
 		SDL_INCLUDE = -I/usr/include
 		OPENCV_INCLUDE =`pkg-config --cflags opencv`
 		OPENCV_LIB =`pkg-config --libs opencv`
-		WEBSOCKET_INCLUDE =-I/usr/include
-		WEBSOCKET_LIB =-lboost_system
-		LDFLAGS = $(WEBSOCKET_LIB) $(SDL_LIB) $(OPENCV_LIB) 
+		LIBWEBSOCKET_INCLUDE =-I/usr/include
+		LIBWEBSOCKET_LIB =-lwebsockets
+		LDFLAGS = $(LIBWEBSOCKET_LIB) $(SDL_LIB) $(OPENCV_LIB)
 		EXE =ApplicationServer.app
 	endif
 
