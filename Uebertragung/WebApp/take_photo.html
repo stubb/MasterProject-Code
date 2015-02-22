@@ -50,11 +50,19 @@
 			nwF.disconnect();
 		};
 		
+		var video_constraints = {
+			mandatory: {
+				maxHeight: 480,
+				maxWidth: 640 
+			},
+			optional: []
+		};
+
 		if (navigator.getUserMedia) {
 			navigator.getUserMedia (
 				// constraints
 				{
-					video: true,
+					video: video_constraints,
 					audio: false
 				},
 
@@ -62,7 +70,9 @@
 				function(localMediaStream) {
 					var video = document.querySelector('video');
 					video.src = window.URL.createObjectURL(localMediaStream);
-					// Do something with the video here, e.g. 
+					var size = calcOptimalSize(document.getElementById('video').videoWidth, document.getElementById('video').videoHeight, $(window).width());
+					video.videoWidth = size[0];
+					video.videoHeight = size[1];
 					video.play();
 				},
 
@@ -85,10 +95,10 @@
 		}
 	</script>
   <div id="container">
-	<video id="video" class="center"></video>
+	<video id="video" class="center" width="100%" height="auto"></video>
 	<button onclick="takepicture()">Take photo</button>
 	<button id="sendButton" onclick="sendFile()" disabled>Send</button>
-	<canvas id="preview_canvas" class="center"></canvas>
+	<canvas id="preview_canvas" class="center" width="100%" height="auto"></canvas>
   </div>
 </body>
 </html>
