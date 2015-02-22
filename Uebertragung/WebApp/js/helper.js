@@ -20,3 +20,17 @@ var resizeElement = function(obj, maxWidth) {
 	console.log("new size: " + new_width + " x " + new_height);
 	return [new_width, new_height];
 };
+
+var calcOptimalSize = function(width, height, maxWidth) {
+	var ratio = 0;
+	var new_width = width;
+	var new_height = height;
+	if (width > maxWidth)
+	{
+		ratio = width / maxWidth;
+		new_width = maxWidth;
+		new_height = (height / ratio);
+	}
+	console.log("optimal size: " + new_width + " x " + new_height);
+	return [new_width, new_height];
+};

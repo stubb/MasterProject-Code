@@ -8,21 +8,25 @@
 	<link rel="stylesheet" href="css/themes/jquery.mobile.icons.min.css" />
 	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile.structure-1.4.5.min.css" />
 	<link rel="stylesheet" href="css/client.css">
+	<link href="css/toastr/toastr.min.css" rel="stylesheet"/>
 	<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script> 
 	<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
 	<script src="js/helper.js"></script>
 	<script src="network-webrtc-adapter.js"></script>
 	<script src="network-websocket-adapter.js"></script>
 	<script src="network-facade.js"></script>
+	<script src="js/toastr/toastr.min.js"></script>
+	<script src="js/toastr/toastr_conf.js"></script>
 </head>
 <body>
 	<script type="text/javascript">
 		var nwF = new NetworkFacade("WebSocket");
-		nwF.init("ws://127.0.0.1:9002", "kili_localhost");
+		nwF.init("ws://192.168.178.46:9000", "kili_localhost");
 		
 		var sendFile = function() {
 			var time = new Date();
 			var timeStr = time.toLocaleTimeString();
+			var canvas = document.getElementById('preview_canvas');
 			var xmlString = '<?xml version="1.0" encoding="UTF-8"?>';
 			xmlString += '<package>';
 			xmlString += '<user>' + nwF.localUserName + '</user>';
@@ -30,7 +34,7 @@
 			xmlString += '<width>' + canvas.width +'</width>';
 			xmlString += '<height>' + canvas.height +'</height>';
 			xmlString += '<timestamp>' + timeStr + '</timestamp>';
-			xmlString += '<data>' + ua2text(canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data) + '</data>';
+			xmlString += '<data>' + canvas.toDataURL("image/png") + '</data>';
 			xmlString += '</package>';
 			result = nwF.sendData(xmlString);
 			if (result == 0) {
@@ -73,9 +77,10 @@
 
 		function takepicture() {
 			var canvas = document.getElementById('preview_canvas');
-			canvas.width = document.getElementById('video').videoWidth;
-			canvas.height = document.getElementById('video').videoHeight;
-			canvas.getContext('2d').drawImage(document.getElementById('video'), 0, 0, document.getElementById('video').videoWidth, document.getElementById('video').videoHeight);
+			var size = calcOptimalSize(document.getElementById('video').videoWidth, document.getElementById('video').videoHeight, $(window).width());
+			canvas.width = size[0];
+			canvas.height = size[1];
+			canvas.getContext('2d').drawImage(document.getElementById('video'), 0, 0, size[0], size[1]);
 			document.getElementById("sendButton").disabled = false;
 		}
 	</script>
