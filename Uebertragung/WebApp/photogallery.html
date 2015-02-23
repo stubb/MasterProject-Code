@@ -20,11 +20,12 @@
 <body>
 	<script type="text/javascript">
 		var nwF = new NetworkFacade("WebSocket");
-		nwF.init("ws://192.168.178.46:9000", "WebAppUser");
+		nwF.init("ws://141.45.205.192:9000", "WebAppUser");
 
 		var reader = new FileReader();
 		var type = null;
 		var imgData = "";
+		var data_short = "";
 		
 	</script>
 	<div id="content_container">
@@ -57,6 +58,7 @@
 					ctx.drawImage(img, 0, 0, size[0], size[1]);
 					imgData = canvas.toDataURL("image/png");
 					image.src = imgData;
+					data_short = imgData.replace(/^data:image\/png;base64,/ig, "");
 					console.log($(window).width());
 					size2 = resizeElement(image, $(window).width());
 					var ctx2 = pre_canvas.getContext("2d");
@@ -72,11 +74,12 @@
 				var canvas = document.getElementById('preview_canvas');
 				var xmlString = '<?xml version="1.0" encoding="UTF-8"?>';
 				xmlString += '<package>';
-				xmlString += '<type>' + type +'</type>';
+				xmlString += '<type>picture</type>';
 				xmlString += '<width>' + canvas.width +'</width>';
 				xmlString += '<height>' + canvas.height +'</height>';
 				xmlString += '<timestamp>' + timeStr + '</timestamp>';
-				xmlString += '<data>' + imgData + '</data>';
+				xmlString += '<data>' + data_short + '</data>';
+				console.log(data_short);
 				xmlString += '</package>';
 				result = nwF.sendData(xmlString);
 				if (result == 0) {

@@ -21,7 +21,7 @@
 <body>
 	<script type="text/javascript">
 		var nwF = new NetworkFacade("WebSocket");
-		nwF.init("ws://192.168.178.46:9000", "kili_localhost");
+		nwF.init("ws://141.45.205.192:9000", "WebAppUser");
 		
 		var sendFile = function() {
 			var time = new Date();
@@ -34,7 +34,11 @@
 			xmlString += '<width>' + canvas.width +'</width>';
 			xmlString += '<height>' + canvas.height +'</height>';
 			xmlString += '<timestamp>' + timeStr + '</timestamp>';
-			xmlString += '<data>' + canvas.toDataURL("image/png") + '</data>';
+			var data = canvas.toDataURL("image/png");
+			var data_short = data.replace(/^data:image\/png;base64,/ig, "");
+			console.log(data);
+			console.log(data_short);
+			xmlString += '<data>' + data_short + '</data>';
 			xmlString += '</package>';
 			result = nwF.sendData(xmlString);
 			if (result == 0) {
