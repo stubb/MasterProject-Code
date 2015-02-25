@@ -24,6 +24,7 @@ using namespace std;
 //						GLOBAL VARIABLES
 //	============================================================
 MonkeyMediaProcessor *mmp = NULL;
+unsigned int position = 0;
 
 //	============================================================
 //					LIBWEBSOCKET FUNCTIONS
@@ -47,7 +48,6 @@ static int callback_save_data(	struct libwebsocket_context * that,
 								size_t len)
 {
 	char recv_buffer[104857600]; // 100 MB Buffer.
-	unsigned int position = 0;
 	switch (reason)
 	{
 		case LWS_CALLBACK_ESTABLISHED:
