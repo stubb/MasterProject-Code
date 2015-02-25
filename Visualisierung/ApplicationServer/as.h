@@ -47,7 +47,7 @@ static int callback_save_data(	struct libwebsocket_context * that,
 								void *in,
 								size_t len)
 {
-	char recv_buffer[104857600]; // 100 MB Buffer.
+	char* recv_buffer = new char[104857600]; // 100 MB Buffer.
 	switch (reason)
 	{
 		case LWS_CALLBACK_ESTABLISHED:
@@ -63,7 +63,7 @@ static int callback_save_data(	struct libwebsocket_context * that,
 					cout <<  "Done receiving data. Got " << position << " Bytes." << endl;
 				#endif
 
-				char xml_string[position];
+				char* xml_string = new char[position];
 				memcpy(xml_string, recv_buffer, position);
 				mmp->process_monkey_data(xml_string);
 				position = 0; // Reset position.
