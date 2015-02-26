@@ -34,3 +34,17 @@ var calcOptimalSize = function(width, height, maxWidth) {
 	console.log("optimal size: " + new_width + " x " + new_height);
 	return [new_width, new_height];
 };
+
+var getXMLforPicture = function(width, height, image_payload) {
+	var time = new Date();
+	var timeStr = time.toLocaleTimeString();
+	var xmlString = '<?xml version="1.0" encoding="UTF-8"?>';
+	xmlString += '<package>';
+	xmlString += '<type>picture</type>';
+	xmlString += '<width>' + width +'</width>';
+	xmlString += '<height>' + height +'</height>';
+	xmlString += '<timestamp>' + timeStr + '</timestamp>';
+	xmlString += '<data>' + image_payload + '</data>';
+	xmlString += '</package>';
+	return xmlString;
+};

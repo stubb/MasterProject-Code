@@ -21,28 +21,14 @@
 <body>
 	<script type="text/javascript">
 		var nwF = new NetworkFacade("WebSocket");
-		nwF.init("ws://141.45.205.192:9000", "WebAppUser");
+		nwF.init("ws://127.0.0.1:9000", "WebAppUser");
 		
 		var sendFile = function() {
-			var time = new Date();
-			var timeStr = time.toLocaleTimeString();
-			var canvas = document.getElementById('preview_canvas');
-			var xmlString = '<?xml version="1.0" encoding="UTF-8"?>';
-			xmlString += '<package>';
-			xmlString += '<user>' + nwF.localUserName + '</user>';
-			xmlString += '<type>image/png</type>';
-			xmlString += '<width>' + canvas.width +'</width>';
-			xmlString += '<height>' + canvas.height +'</height>';
-			xmlString += '<timestamp>' + timeStr + '</timestamp>';
-			var data = canvas.toDataURL("image/png");
-			var data_short = data.replace(/^data:image\/png;base64,/ig, "");
-			console.log(data);
-			console.log(data_short);
-			xmlString += '<data>' + data_short + '</data>';
-			xmlString += '</package>';
-			result = nwF.sendData(xmlString);
-			if (result == 0) {
-				console.log("Photo sent!");
+			var _image_data = $('#preview_canvas').get(0).toDataURL("image/png");
+			_image_data = _image_data.replace(/^data:image\/png;base64,/ig, "");
+		
+			if (nwF.sendData(getXMLforPicture($('#preview_canvas').get(0).width, $('#preview_canvas').get(0).height, _image_data)) == 0) {
+				console.log("Photo sent! Dimensions " +  $('#preview_canvas').get(0).width + " x " + $('#preview_canvas').get(0).height);
 				toastr.success('Your photo was sent!');
 			}
 			else {
