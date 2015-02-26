@@ -18,83 +18,33 @@
 	<script src="js/toastr/toastr_conf.js"></script>
 </head>
 <body>
-	<script type="text/javascript">
-		var nwF = new NetworkFacade("WebSocket");
-		nwF.init("ws://141.45.205.192:9000", "WebAppUser");
-
-		var reader = new FileReader();
-		var type = null;
-		var imgData = "";
-		var data_short = "";
-		
-	</script>
 	<div id="content_container">
 		<canvas id="preview_canvas" class="center"></canvas>
 		<form>
-			<input id= "filechooser" type="file" accept="image/*" autofocus onchange="loadFile(event)">
+			<input id="filechooser" type="file" accept="image/*" autofocus onchange="loadFile(event)">
 			<input type="button" onclick="sendFile()" value="Send"/>
 		</form>
 		<canvas id="data_canvas"></canvas>
-		<script>
-			var loadFile = function(event) {
-				var canvas = document.getElementById('data_canvas');
-				var pre_canvas = document.getElementById('preview_canvas');
-				var ctx = canvas.getContext('2d');
-				var ctx2 = pre_canvas.getContext("2d");
-				var img = new Image();
-				var image = new Image();
-				type = event.target.files[0].type;
-				img.src = URL.createObjectURL(event.target.files[0]);
-				img.onload = function() {
-					if (canvas.width > 1280) {
-						canvas.width = 1280;
-					}
-					else {
-						canvas.width = img.width;
-					}
-					canvas.height = img.height;
-					size = resizeElement(img, 1280);
-					var ctx = canvas.getContext('2d');
-					ctx.drawImage(img, 0, 0, size[0], size[1]);
-					imgData = canvas.toDataURL("image/png");
-					image.src = imgData;
-					data_short = imgData.replace(/^data:image\/png;base64,/ig, "");
-					console.log($(window).width());
-					size2 = resizeElement(image, $(window).width());
-					var ctx2 = pre_canvas.getContext("2d");
-					ctx2.drawImage(image, 0, 0);
-					pre_canvas.width = size2[0];
-					pre_canvas.height = size2[1];
-				}
-			};
-			
-			var sendFile = function() {
-				var time = new Date();
-				var timeStr = time.toLocaleTimeString();
-				var canvas = document.getElementById('preview_canvas');
-				var xmlString = '<?xml version="1.0" encoding="UTF-8"?>';
-				xmlString += '<package>';
-				xmlString += '<type>picture</type>';
-				xmlString += '<width>' + canvas.width +'</width>';
-				xmlString += '<height>' + canvas.height +'</height>';
-				xmlString += '<timestamp>' + timeStr + '</timestamp>';
-				xmlString += '<data>' + data_short + '</data>';
-				console.log(data_short);
-				xmlString += '</package>';
-				result = nwF.sendData(xmlString);
-				if (result == 0) {
-					console.log("Photo sent!");
-					toastr.success('Your photo was sent!');
-				}
-				else {
-					toastr.error(result);
-				}
-			};
-			
-			window.onbeforeunload = function() {
-				nwF.disconnect();
-			};
-		</script>
+		<img id="preview_img" hidden></img>
+		<img id="data_img" hidden></img>
 	</div>
+	<script type="text/javascript">
+		var nwF = new NetworkFacade("WebSocket");
+		nwF.init("ws://141.45.205.192:9000", "WebAppUser");
+		var _image_data = "";
+
+		var loadFile = function(event) {
+			drawPictureFromFileToCanvas($('#filechooser')[0].files[0], $('#preview_canvas').get(0), $('#filechooser').width());
+			_image_data = get720pFilePictureBase64Payload($('#filechooser')[0].files[0], $('#data_canvas').get(0));
+		};
+
+		var sendFile = function() {
+			sendPicture($('#preview_canvas').get(0).width, $('#preview_canvas').get(0).height, _image_data, nwF);
+		};
+
+		window.onbeforeunload = function() {
+			nwF.disconnect();
+		};
+	</script>
 </body>
 </html> 

@@ -69,39 +69,44 @@ var sendPicture = function(width, height, image_payload, facade) {
 	else {
 		toastr.error(result);
 	}
-}
+};
 
-var drawPictureToCanvas = function(picture, picture_width, picture_height, dest_canvas, dest_width) {
-	var optimal_size = calcOptimalSize(picture_width, picture_height, dest_width, true)
+var drawPictureToCanvas = function(picture, picture_width, picture_height, dest_canvas, dest_width, upscale=true) {
+	var optimal_size = calcOptimalSize(picture_width, picture_height, dest_width, upscale)
 	dest_canvas.width = optimal_size[0];
 	dest_canvas.height = optimal_size[1];
 	dest_canvas.getContext('2d').drawImage(picture, 0, 0, optimal_size[0], optimal_size[1]);
-}
+};
 		
 var drawPictureFromFileToCanvas = function(image_file, dest_canvas, dest_width) {
-	var img = document.createElement("img");
+	var img = document.getElementById("preview_img");
 	var reader = new FileReader();
-	reader.onload = function(e) {img.src = e.target.result}
+	reader.onload = function(e) {
+		img.src = e.target.result;
+	}
 	reader.readAsDataURL(image_file);
 	img.onload = function() {
 		drawPictureToCanvas(img, img.width, img.height, dest_canvas, dest_width);
 	}
-}
+};
 
-var get720pPictureBase64Payload = function(image_file, work_canvas) {
+var get720pPictureBase64Payload = function(image, work_canvas) {
 	var payload = null;
-	var image = document.createElement("image");
+	// dont upscale, it can be done in the rendering client if necessary. Keep bandwidth low!
+	drawPictureToCanvas(image, image.width, image.height, work_canvas, 1280, false);
+	payload = work_canvas.toDataURL("image/jpeg");
+	payload = payload.replace(/^data:image\/jpeg;base64,/ig, "");
+	return payload;
+};
+
+var get720pFilePictureBase64Payload = function(image_file, work_canvas) {
+	var payload;
+	var image = document.getElementById("data_img");
 	var reader = new FileReader();
-	reader.onload = function(e) {image.src = e.target.result; console.log('Hallo1');}
+	reader.onload = function(e) {image.src = e.target.result;};
 	reader.readAsDataURL(image_file);
 	image.onload = function() {
-		// dont upscale, it can be done in the rendering client if necessary. Keep bandwidth low!
-		var optimal_size = calcOptimalSize(image.width, image.height, 1280, false);
-		work_canvas.width = optimal_size[0];
-		work_canvas.height = optimal_size[1];
-		work_canvas.getContext('2d').drawImage(image, 0, 0, optimal_size[0], optimal_size[1]);
-		payload = work_canvas.toDataURL("image/jpeg");
-		payload = payload.replace(/^data:image\/jpeg;base64,/ig, "");
+		payload = get720pPictureBase64Payload(image, work_canvas);
 	}
 	return payload;
-}
+};
