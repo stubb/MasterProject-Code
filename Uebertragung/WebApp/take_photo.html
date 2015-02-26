@@ -26,14 +26,7 @@
 		var sendFile = function() {
 			var _image_data = $('#preview_canvas').get(0).toDataURL("image/png");
 			_image_data = _image_data.replace(/^data:image\/png;base64,/ig, "");
-		
-			if (nwF.sendData(getXMLforPicture($('#preview_canvas').get(0).width, $('#preview_canvas').get(0).height, _image_data)) == 0) {
-				console.log("Photo sent! Dimensions " +  $('#preview_canvas').get(0).width + " x " + $('#preview_canvas').get(0).height);
-				toastr.success('Your photo was sent!');
-			}
-			else {
-				toastr.error(result);
-			}
+			sendPicture($('#preview_canvas').get(0).width, $('#preview_canvas').get(0).height, _image_data, nwF);
 		};
 		
 		window.onbeforeunload = function() {
@@ -76,19 +69,24 @@
 		}
 
 		function takepicture() {
-			var canvas = document.getElementById('preview_canvas');
-			var size = calcOptimalSize(document.getElementById('video').videoWidth, document.getElementById('video').videoHeight, $(window).width());
-			canvas.width = size[0];
-			canvas.height = size[1];
-			canvas.getContext('2d').drawImage(document.getElementById('video'), 0, 0, size[0], size[1]);
+			drawPictureToCanvas($('#video').get(0), $('#video').get(0).videoWidth, $('#video').get(0).videoHeight, $('#preview_canvas').get(0), 
+$('#sendButton').width());
 			document.getElementById("sendButton").disabled = false;
 		}
 	</script>
   <div id="container">
+  <a id="downloadLnk" download="YourFile.jpeg" disabled>Download as image</a>
 	<video id="video" class="center" width="100%" height="auto"></video>
 	<button onclick="takepicture()">Take photo</button>
 	<button id="sendButton" onclick="sendFile()" disabled>Send</button>
 	<canvas id="preview_canvas" class="center" width="100%" height="auto"></canvas>
   </div>
+  <script>
+	function download() {
+		var dt = $('#preview_canvas').get(0).toDataURL('image/jpeg');
+		this.href = dt;
+	};
+	downloadLnk.addEventListener('click', download, false);
+</script>
 </body>
 </html>
