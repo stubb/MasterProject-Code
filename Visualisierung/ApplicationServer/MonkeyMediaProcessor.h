@@ -185,6 +185,7 @@ void base64_cleanup() {
 
 		void process_picture(const char *data)
 		{
+			std::cout << "Kacka Sir! pp" << std::endl;
 			size_t output = 0;
 			//std::cout << "Daten: " << data << std::endl << std::endl;
 			string temp_data = string(data);
@@ -206,9 +207,12 @@ void base64_cleanup() {
 
 		void process_monkey_data(char *xml_string)
 		{
+			std::cout << "Kacka Sir!" << std::endl;
 			XMLDocument monkey_document;
+			std::cout << "Kacka Sir!" << std::endl;
 			monkey_document.Parse(xml_string);
-process_picture(monkey_document.FirstChildElement("package")->FirstChildElement("data")->GetText()) ;/*
+			std::cout << "Kacka Sir!" << std::endl;
+			process_picture(monkey_document.FirstChildElement("package")->FirstChildElement("data")->GetText()) ;/*
 			std::string mime = monkey_document.FirstChildElement("package")->FirstChildElement("type")->GetText();
 			if (mime.compare("picture"))
 			{

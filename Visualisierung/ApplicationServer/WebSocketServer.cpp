@@ -1,6 +1,12 @@
-#include "WebSocketServer.h"
 #include <getopt.h>
 #include <libwebsockets.h>
+#include <iostream>
+
+#include "WebSocketServer.h"
+
+using namespace std;
+
+unsigned int position = 0;
 
 WebSocketServer::WebSocketServer(){
 	init();

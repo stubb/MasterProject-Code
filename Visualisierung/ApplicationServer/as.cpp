@@ -7,7 +7,9 @@
 /*	User Functions.	*/
 #include "as.h"
 #include "NetworkHandler.h"
-#include "WebSocketServer.h"
+
+// global var definitions
+MonkeyMediaProcessor *mmp = NULL;
 
 int main(int argc, char** argv)
 {
@@ -17,13 +19,11 @@ int main(int argc, char** argv)
 	int return_code = 0;
 	int libws_return_code = 0;
 
-	
-
 	vector<char*> *host_ips = new vector<char*>();
 	host_ips->push_back("127.0.0.1");
 
 	int host_port = 2000;
-	int port = 0;
+	int port = 9000;
 
 	while (libws_return_code >= 0) {
 		libws_return_code = getopt_long(argc, argv, "ci:hsp:d:", options, NULL);
@@ -53,28 +53,14 @@ int main(int argc, char** argv)
 	if (return_code == 0 && rendering_clients->size() > 0)
 	{
 		mmp = new MonkeyMediaProcessor(NUMBER_OF_RENDERING_CLIENTS);
-		/*libws_return_code = 0;
-		context = libwebsocket_create_context(&info);
-		if (context == NULL)
-		{
-			cerr << "libwebsocket init failed" << endl;
-			return EXIT_FAILURE;
-		}
-		else
-		{
-			mmp = new MonkeyMediaProcessor(NUMBER_OF_RENDERING_CLIENTS);
-			while (!libws_return_code)
-			{
-				libws_return_code = libwebsocket_service(context, 100);
-			}
-		}*/
+		NetworkHandler* nwh = new NetworkHandler(port);
+		nwh->run();
+		nwh->destroy();
 	}
 	else
 	{
 		cerr << "Couldn't establish Connections. Shutting down " << argv[0] << "." << endl;
 		return(return_code);
 	}
-
-	//libwebsocket_context_destroy(context);
 	return(EXIT_SUCCESS);
 }

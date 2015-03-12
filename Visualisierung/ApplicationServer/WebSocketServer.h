@@ -5,9 +5,9 @@
 #include <getopt.h>
 #include <libwebsockets.h>
 #include "MonkeyMediaProcessor.h"
-#include "as.h"
 
 extern MonkeyMediaProcessor* mmp;
+extern unsigned int position;
 
 using namespace std;
 
@@ -44,7 +44,6 @@ static int callback_save_data(	struct libwebsocket_context * that,
 						void *in,
 						size_t len)
 {
-	unsigned int position = 0;
 	char* recv_buffer = new char[104857600]; // 100 MB Buffer.
 	switch (reason)
 	{
@@ -58,7 +57,7 @@ static int callback_save_data(	struct libwebsocket_context * that,
 			if (remaining == 0)
 			{
 				#if DEBUG
-				cout <<  "Done receiving data. Got " << position << " Bytes." << endl;
+					cout <<  "Done receiving data. Got " << position << " Bytes." << endl;
 				#endif
 				
 				char* xml_string = new char[position];
