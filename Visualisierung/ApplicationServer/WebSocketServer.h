@@ -1,11 +1,13 @@
 #ifndef __WEBSOCKETSERVER_H__
 #define __WEBSOCKETSERVER_H__
 
-#include "MonkeyMediaProcessor.h"
-
 /*	Libwebsockets Includes.	*/
 #include <getopt.h>
 #include <libwebsockets.h>
+#include "MonkeyMediaProcessor.h"
+#include "as.h"
+
+extern MonkeyMediaProcessor* mmp;
 
 using namespace std;
 
@@ -16,13 +18,13 @@ class WebSocketServer {
 		struct lws_context_creation_info info;
 		int return_code = 0;
 		int server_port = 9000;
-		void init();
+		int init();
 
 	public:
 		WebSocketServer();
 		WebSocketServer(int port);
-		bool start();
-		bool stop();
+		int run();
+		void destroy();
 };
 
 static int callback_http(	struct libwebsocket_context * that,
@@ -61,7 +63,7 @@ static int callback_save_data(	struct libwebsocket_context * that,
 				
 				char* xml_string = new char[position];
 				memcpy(xml_string, recv_buffer, position);
-				//mmp->process_monkey_data(xml_string);
+				mmp->process_monkey_data(xml_string);
 				position = 0; // Reset position.
 			}
 			break;
