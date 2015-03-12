@@ -30,12 +30,12 @@
 	</div>
 	<script type="text/javascript">
 		var nwF = new NetworkFacade("WebSocket");
-		nwF.init("ws://141.45.205.192:9000", "WebAppUser");
+		nwF.init("ws://127.0.0.1:9000", "WebAppUser");
 		var _image_data = "";
 
 		var loadFile = function(event) {
 			drawPictureFromFileToCanvas($('#filechooser')[0].files[0], $('#preview_canvas').get(0), $('#filechooser').width());
-			_image_data = get720pFilePictureBase64Payload($('#filechooser')[0].files[0], $('#data_canvas').get(0));
+			get720pFilePictureBase64Payload($('#filechooser')[0].files[0], $('#data_canvas').get(0), function(payloadFP) {_image_data = payloadFP;});
 		};
 
 		var sendFile = function() {
