@@ -90,11 +90,10 @@ var drawPictureFromFileToCanvas = function(image_file, dest_canvas, dest_width) 
 	}
 };
 
-//TODO no always returns valid payload...
 var get720pPictureBase64Payload = function(image, work_canvas) {
 	// dont upscale, it can be done in the rendering client if necessary. Keep bandwidth low!
 	drawPictureToCanvas(image, image.width, image.height, work_canvas, 1280, false);
-	var payload = work_canvas.toDataURL("image/png");
+	var payload = work_canvas.toDataURL("image/jpeg");
 	payload = payload.replace(/^data:image\/jpeg;base64,/ig, "");
 	return payload;
 };

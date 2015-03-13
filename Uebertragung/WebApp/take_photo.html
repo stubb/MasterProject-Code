@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title>Remote control</title>
+	<title>Take Photo</title>
 	<meta charset="utf-8"/>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="css/themes/htw_color.css" />
 	<link rel="stylesheet" href="css/themes/jquery.mobile.icons.min.css" />
-	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile.structure-1.4.5.min.css" />
+	<link rel="stylesheet" href="css/jquery.mobile.structure-1.4.5.min.css" />
 	<link rel="stylesheet" href="css/client.css">
 	<link href="css/toastr/toastr.min.css" rel="stylesheet"/>
-	<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script> 
-	<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+	<script src="js/jquery/jquery-1.11.2.min.js"></script> 
+	<script src="js/jquery/jquery.mobile-1.4.5.min.js"></script>
 	<script src="js/helper.js"></script>
 	<script src="network-webrtc-adapter.js"></script>
 	<script src="network-websocket-adapter.js"></script>
@@ -69,7 +69,8 @@
 
 		function takepicture() {
 			drawPictureToCanvas($('#video').get(0), $('#video').get(0).videoWidth, $('#video').get(0).videoHeight, $('#preview_canvas').get(0), $('#sendButton').width());
-			_image_data = get720pPictureBase64Payload($('#video').get(0), $('#data_canvas').get(0));
+			_image_data = $('#preview_canvas').get(0).toDataURL("image/jpeg");
+			_image_data = _image_data.replace(/^data:image\/jpeg;base64,/ig, "");
 			document.getElementById("sendButton").disabled = false;
 		}
 	</script>
@@ -78,9 +79,6 @@
 	<button onclick="takepicture()">Take photo</button>
 	<button id="sendButton" onclick="sendFile()" disabled>Send</button>
 	<canvas id="preview_canvas" class="center" width="100%" height="auto"></canvas>
-	<canvas id="data_canvas"></canvas>
-	<img id="preview_img" hidden></img>
-	<img id="data_img" hidden></img>
   </div>
 </body>
 </html>
