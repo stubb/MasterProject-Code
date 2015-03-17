@@ -12,6 +12,7 @@
 	<script src="js/jquery/jquery-1.11.2.min.js"></script> 
 	<script src="js/jquery/jquery.mobile-1.4.5.min.js"></script>
 	<script src="js/helper.js"></script>
+	<script src="js/config.js"></script>
 	<script src="network-webrtc-adapter.js"></script>
 	<script src="network-websocket-adapter.js"></script>
 	<script src="network-facade.js"></script>
@@ -30,8 +31,8 @@
 		<img id="data_img" hidden></img>
 	</div>
 	<script type="text/javascript">
-		var nwF = new NetworkFacade("WebSocket");
-		nwF.init("ws://127.0.0.1:9000", "WebAppUser");
+		var nwF = new NetworkFacade(remote_server_protocol);
+		nwF.init(remote_server_url, user);
 		var _image_data = "";
 
 		var loadFile = function(event) {
