@@ -86,7 +86,7 @@ var drawPictureFromFileToCanvas = function(image_file, dest_canvas, dest_width) 
 	}
 	reader.readAsDataURL(image_file);
 	img.onload = function() {
-		drawPictureToCanvas(img, img.width, img.height, dest_canvas, dest_width);
+		drawPictureToCanvas(img, img.width, img.height, dest_canvas, dest_width, false);
 	}
 };
 
