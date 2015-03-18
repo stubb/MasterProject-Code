@@ -16,11 +16,9 @@ class WebSocketServer {
 	private:
 		struct libwebsocket_context *context;
 		struct lws_context_creation_info info;
-		struct libwebsocket_protocols protocols[];
 		int return_code = 0;
 		int server_port = 9000;
 		int init();
-		void init_protocols();
 
 	public:
 		WebSocketServer();
@@ -79,6 +77,23 @@ static int callback_save_data(	struct libwebsocket_context * that,
 	
 	return 0;
 }
+
+static struct libwebsocket_protocols protocols[] = {
+	{
+		"http-only",   // name
+		callback_http, // callback
+		0              // per_session_data_size
+	},
+	{
+		"callback_save_data",
+		callback_save_data,
+		0,
+		65536				// rx_buffer_size
+	},
+	{
+		NULL, NULL, 0   /* End of list */
+	}
+};
 #endif
 
 
