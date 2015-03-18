@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <iterator>
 #include <string>
 
 #include <cstdint>
@@ -185,44 +186,40 @@ void base64_cleanup() {
 
 		void process_picture(const char *data)
 		{
-			std::cout << "Kacka Sir! pp" << std::endl;
+			// Decode the Image Data.
 			size_t output = 0;
-			//std::cout << "Daten: " << data << std::endl << std::endl;
-			string temp_data = string(data);
-			std::cout << temp_data << std::endl << std::endl << strlen(data) << std::endl;
 			unsigned char *picture_raw = base64_decode(data, strlen(data), &output);
 			
+			// OpenCV imdecode needs a vector instead of a unsigned char* array,
+			// so we do a quick conversion.
+			cv::vector<unsigned char> picture_raw_vector(picture_raw, picture_raw + output);
 
+			Mat img = imdecode(picture_raw_vector, 1);
+
+			#if DEBUG
 			std::fstream imgout("./test.png", std::fstream::out | std::fstream::binary);
 			imgout.write(reinterpret_cast<char*>(picture_raw), output);
 			imgout.close();
+			
+			imwrite( "./testMat.jpg", img );
+			#endif
 
-			Mat img = imdecode(*picture_raw, CV_LOAD_IMAGE_COLOR);
 			if (img.total() > 0)
 				img = img.reshape(0, 1);
 			else
 				std::cout << "Kacka Sir!" << std::endl;
-			//std::cout << "Hier sind die Daten: " << std::endl << img.data << std::endl << "Daten Ende!" << std::endl;
 		}
 
 		void process_monkey_data(char *xml_string)
 		{
-			std::cout << "Kacka Sir!" << std::endl;
 			XMLDocument monkey_document;
-			std::cout << "Kacka Sir!" << std::endl;
 			monkey_document.Parse(xml_string);
-			std::cout << "Kacka Sir!" << std::endl;
 			process_picture(monkey_document.FirstChildElement("package")->FirstChildElement("data")->GetText()) ;/*
 			std::string mime = monkey_document.FirstChildElement("package")->FirstChildElement("type")->GetText();
 			if (mime.compare("picture"))
 			{
 				
 			}*/
-
-			/*int image_dimensions[2] = {0};
-			document.FirstChildElement( "package" )->FirstChildElement( "width" )->QueryIntText( &image_dimensions[0] );
-			document.FirstChildElement( "package" )->FirstChildElement( "height" )->QueryIntText( &image_dimensions[1] );
-			std::cout << image_dimensions[0] << " " << image_dimensions[1] << std::endl;*/
 		}
 };
 

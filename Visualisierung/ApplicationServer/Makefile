@@ -9,7 +9,7 @@ ifeq ($(OS),Windows_NT)
 	SDL_INCLUDE = -IC:/SDL2/x86_64-w64-mingw32/include
 	LIBWEBSOCKET_LIB = -LC:/MinGW64/libwebsocket/lib -lwebsockets
 	LIBWEBSOCKET_INCLUDE = -IC:/MinGW64/libwebsocket/include
-	LDFLAGS = -Wl,--stack,1000000000 -lmingw32 -lws2_32 -mwindows -mconsole $(SDL_LIB) $(OPENCV_LIB) $(LIBWEBSOCKET_LIB)
+	LDFLAGS = -lmingw32 -lws2_32 -mwindows -mconsole $(SDL_LIB) $(OPENCV_LIB) $(LIBWEBSOCKET_LIB)
 	EXE = ApplicationServer.exe
 else
 	ifeq ($(shell uname),Linux)
