@@ -62,7 +62,7 @@ static int callback_save_data(	struct libwebsocket_context * that,
 				
 				char* xml_string = new char[position];
 				memcpy(xml_string, recv_buffer, position);
-				mmp->process_monkey_data(xml_string);
+				mmp->process_monkey_data(xml_string, 1);
 				position = 0; // Reset position.
 			}
 			break;

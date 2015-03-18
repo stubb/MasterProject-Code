@@ -30,3 +30,8 @@ install_manifest.txt
 #Temp
 *.swp
 *~
+
+#Picture Files
+Visualisierung/ApplicationServer/*.png
+Visualisierung/ApplicationServer/*.jpg
+Visualisierung/ApplicationServer/*.bmp

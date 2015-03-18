@@ -25,99 +25,31 @@ class MonkeyMediaProcessor
 {
 	private:
 		int NUMBER_OF_RENDERING_CLIENTS;
-		//std::vector<> v;
+		Mat *decoded_image;
+		std::vector<Mat> *processed_images;
 
 	public:
 		MonkeyMediaProcessor()
 		{
 			NUMBER_OF_RENDERING_CLIENTS = 1;
+			decoded_image = new Mat();
+			processed_images = new vector<Mat>();
 		}
 		MonkeyMediaProcessor(int num_rc)
 		{
 			NUMBER_OF_RENDERING_CLIENTS = num_rc;
+			decoded_image = new Mat();
+			processed_images = new vector<Mat>();
 		}
 
-		
-
-
-
-
-
-
-		static inline bool is_base64(unsigned char c) {
-			return (isalnum(c) || (c == '+') || (c == '/'));
-		}
-		char *base64decode( char *p )
-		{
-			static const std::string b64_charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-			std::string ret;
-			char * str = p;
-			int in_len,
-				i = 0,
-				j = 0,
-				in_ = 0;
-			unsigned char block_4[4], block_3[3];
-
-			in_len = strlen(str);
-
-			while( in_len-- && ( str[in_] != '=') && is_base64(str[in_]) ){
-				block_4[i++] = str[in_];
-				in_++;
-				if( i == 4 ){
-					for( i = 0; i < 4; i++ ){
-						block_4[i] = b64_charset.find(block_4[i]);
-					}
-					block_3[0] = (block_4[0] << 2) + ((block_4[1] & 0x30) >> 4);
-					block_3[1] = ((block_4[1] & 0xf) << 4) + ((block_4[2] & 0x3c) >> 2);
-					block_3[2] = ((block_4[2] & 0x3) << 6) + block_4[3];
-
-					for( i = 0; (i < 3); i++ ){
-						ret += block_3[i];
-					}
-					i = 0;
-				}
-			}
-
-			if(i){
-				for( j = i; j <4; j++ ){
-					block_4[j] = 0;
-				}
-
-				for( j = 0; j < 4; j++ ){
-					block_4[j] = b64_charset.find(block_4[j]);
-				}
-
-				block_3[0] = (block_4[0] << 2) + ((block_4[1] & 0x30) >> 4);
-				block_3[1] = ((block_4[1] & 0xf) << 4) + ((block_4[2] & 0x3c) >> 2);
-				block_3[2] = ((block_4[2] & 0x3) << 6) + block_4[3];
-
-				for( j = 0; (j < i - 1); j++ ){
-					ret += block_3[j];
-				}
-			}
-
-			return (char*) ret.c_str();
-		}
-
-
-
-
-
-
-
-
-
-
-
-
-char encoding_table[64] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
-                                'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
-                                'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
-                                'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
-                                'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
-                                'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-                                'w', 'x', 'y', 'z', '0', '1', '2', '3',
-                                '4', '5', '6', '7', '8', '9', '+', '/'};
+char encoding_table[64] = {	'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+							'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+							'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+							'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
+							'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+							'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
+							'w', 'x', 'y', 'z', '0', '1', '2', '3',
+							'4', '5', '6', '7', '8', '9', '+', '/'};
 char *decoding_table = NULL;
 int mod_table[3] = {0, 2, 1};
 
@@ -169,16 +101,6 @@ void base64_cleanup() {
 }
 
 
-
-
-
-
-
-
-
-
-
-
 		int get_number_of_rendering_client() const
 		{
 			return NUMBER_OF_RENDERING_CLIENTS;
@@ -194,32 +116,49 @@ void base64_cleanup() {
 			// so we do a quick conversion.
 			cv::vector<unsigned char> picture_raw_vector(picture_raw, picture_raw + output);
 
-			Mat img = imdecode(picture_raw_vector, 1);
+			imdecode(picture_raw_vector, 1, decoded_image);
 
 			#if DEBUG
 			std::fstream imgout("./test.png", std::fstream::out | std::fstream::binary);
 			imgout.write(reinterpret_cast<char*>(picture_raw), output);
 			imgout.close();
 			
-			imwrite( "./testMat.jpg", img );
+			imwrite( "./testMat.jpg", *decoded_image );
 			#endif
 
-			if (img.total() > 0)
-				img = img.reshape(0, 1);
-			else
+			if (decoded_image->total() <= 0)
 				std::cout << "Kacka Sir!" << std::endl;
 		}
+		
+		void split_image()
+		{
+			processed_images->clear();
+			for (int i = 0; i < NUMBER_OF_RENDERING_CLIENTS; ++i)
+			{
+				Rect rect(decoded_image->cols / NUMBER_OF_RENDERING_CLIENTS * i, 0, decoded_image->cols / NUMBER_OF_RENDERING_CLIENTS,decoded_image->rows);
+				Mat temp_image = Mat(*decoded_image, rect);
+				processed_images->push_back(temp_image);
+			}
+		}
+		
+		void reshape_images()
+		{
+			for (int i = 0; i < processed_images->size(); ++i)
+			{
+				processed_images->at(i).reshape(0, 1);
+			}
+		}
 
-		void process_monkey_data(char *xml_string)
+		void process_monkey_data(char *xml_string, int with_reshape)
 		{
 			XMLDocument monkey_document;
 			monkey_document.Parse(xml_string);
-			process_picture(monkey_document.FirstChildElement("package")->FirstChildElement("data")->GetText()) ;/*
 			std::string mime = monkey_document.FirstChildElement("package")->FirstChildElement("type")->GetText();
-			if (mime.compare("picture"))
-			{
-				
-			}*/
+
+			if (mime.compare("picture") == 0)
+				process_picture(monkey_document.FirstChildElement("package")->FirstChildElement("data")->GetText());
+			split_image();
+			if (with_reshape) reshape_images();
 		}
 };
 
