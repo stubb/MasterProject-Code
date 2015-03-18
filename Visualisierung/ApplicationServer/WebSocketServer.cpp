@@ -19,6 +19,7 @@ WebSocketServer::WebSocketServer(int port){
 
 int WebSocketServer::init() {
 	int return_code = 0;
+	init_protocols();
 	memset(&info, 0, sizeof info);
 	info.port = server_port;
 	info.gid = -1;
@@ -31,6 +32,28 @@ int WebSocketServer::init() {
 		return_code = EXIT_FAILURE;
 	}
 	return return_code;
+}
+
+void WebSocketServer::init_protocols() {
+	protocols[0] = 
+		{
+			"http-only",   // name
+			callback_http, // callback
+			0              // per_session_data_size
+		};
+		
+	protocols[1] = 		
+		{
+			"callback_save_data",
+			callback_save_data,
+			0,
+			65536				// rx_buffer_size
+		};
+		
+	protocols[2] = 
+		{
+			NULL, NULL, 0   /* End of list */
+		};
 }
 
 int WebSocketServer::run() {
