@@ -153,12 +153,18 @@ void base64_cleanup() {
 		{
 			XMLDocument monkey_document;
 			monkey_document.Parse(xml_string);
-			std::string mime = monkey_document.FirstChildElement("package")->FirstChildElement("type")->GetText();
+			if (monkey_document.Error()) {
+				std::cout << "XML Parse() ErrorID: " << monkey_document.ErrorID() << std::endl;
+			}
+			else {
+				std::string mime = monkey_document.FirstChildElement("package")->FirstChildElement("type")->GetText();
+				if (mime.compare("picture") == 0)
+					process_picture(monkey_document.FirstChildElement("package")->FirstChildElement("data")->GetText());
+				split_image();
+				if (with_reshape)
+					reshape_images();
 
-			if (mime.compare("picture") == 0)
-				process_picture(monkey_document.FirstChildElement("package")->FirstChildElement("data")->GetText());
-			split_image();
-			if (with_reshape) reshape_images();
+			}
 		}
 };
 
