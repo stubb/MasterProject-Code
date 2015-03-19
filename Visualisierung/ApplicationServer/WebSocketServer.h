@@ -10,8 +10,6 @@
 #include <iostream>
 
 extern MonkeyMediaProcessor* mmp;
-extern unsigned int position;
-extern char* recv_buffer;
 
 using namespace std;
 
@@ -48,6 +46,8 @@ static int callback_save_data(	struct libwebsocket_context * that,
 						void *in,
 						size_t len)
 {
+	unsigned int position = 0;
+	char* recv_buffer = new char[104857600]; // 100 MB Buffer
 	switch (reason)
 	{
 		case LWS_CALLBACK_ESTABLISHED:
@@ -71,7 +71,7 @@ static int callback_save_data(	struct libwebsocket_context * that,
 					}
 					cout << endl << endl;
 				#endif
-				mmp->process_monkey_data(xml_string, 1);
+				mmp->process_monkey_data(xml_string, position, 1);
 				position = 0; // Reset position.
 			}
 			break;

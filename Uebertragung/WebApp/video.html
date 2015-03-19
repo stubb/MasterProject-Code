@@ -54,7 +54,11 @@
 			// stopped
 			if (document.getElementById("start_stream").innerHTML == "Start stream") {
 				document.getElementById("start_stream").innerHTML = "Stop stream";
-				facade.startStreamVideo("video_tag");
+				var width = document.getElementById('video_tag').videoWidth;
+				if (width > 1280) {
+					width = 1280;
+				}
+				facade.startStreamVideo(document.getElementById('video_tag'), width);
 			}
 			// running
 			else {

@@ -6,9 +6,6 @@
 
 using namespace std;
 
-unsigned int position = 0;
-char* recv_buffer = new char[104857600]; // 100 MB Buffer.
-
 WebSocketServer::WebSocketServer(){
 	init();
 }

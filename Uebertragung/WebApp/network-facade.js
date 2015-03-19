@@ -22,6 +22,7 @@ var NetworkFacade = function (protocol) {
 	if(!supportedProtocols.contains(this.protocol)) {
 		console.log('NetworkFacade does not support protocol type ' + this.protocol);
 	}
+	this.streamingVideo = null;
 };
 
 NetworkFacade.prototype.init = function(server, localName) {
@@ -65,18 +66,29 @@ NetworkFacade.prototype.disconnect = function() {
 	}
 };
 
-NetworkFacade.prototype.startStreamVideo = function(source) {
+NetworkFacade.prototype.startStreamVideo = function(video_source, width) {
 	if(this.protocol == "WebRTC") {
 		console.log('NetworkFacade init called for protocol WebRTC');
 		addLocalStreamFromHere();
 		negotiateCallFromHere();
+		return true;
 	}
 	else if(this.protocol == "WebSocket") {
-		console.log('Not implemented yet!');
+		var canvas = document.createElement("canvas");
+		canvas.setAttribute("type", "hidden");
+		var nwf = this;
+		this.streamingVideo = setInterval(function(){
+			drawPictureToCanvas(video_source, video_source.videoWidth, video_source.videoHeight, canvas, width);
+			_image_data = canvas.toDataURL("image/jpeg");
+			_image_data = _image_data.replace(/^data:image\/jpeg;base64,/ig, "");
+			nwf.sendData(getXMLforPicture(canvas.width, canvas.height, _image_data));
+		}, 50);
+		return true;
 	}
 	else {
 		// do nothing
 		console.log('Error');
+		return false;
 	}
 };
 
@@ -85,7 +97,7 @@ NetworkFacade.prototype.stopStreamVideo = function(e) {
 		hangUpFromHere();
 	}
 	else if(this.protocol == "WebSocket") {
-		console.log('Not implemented yet!');	
+		clearInterval(this.streamingVideo);
 	}
 	else {
 		// do nothing

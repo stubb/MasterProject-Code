@@ -20,6 +20,7 @@
 
 using namespace cv;
 using namespace tinyxml2;
+using namespace std;
 
 class MonkeyMediaProcessor
 {
@@ -149,10 +150,10 @@ void base64_cleanup() {
 			}
 		}
 
-		void process_monkey_data(char *xml_string, int with_reshape)
+		void process_monkey_data(char *xml_string, unsigned int xml_string_size, int with_reshape)
 		{
 			XMLDocument monkey_document;
-			monkey_document.Parse(xml_string);
+			monkey_document.Parse(xml_string, xml_string_size);
 			if (monkey_document.Error()) {
 				std::cout << "XML Parse() ErrorID: " << monkey_document.ErrorID() << std::endl;
 			}
