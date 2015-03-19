@@ -1,10 +1,13 @@
 #ifndef __WEBSOCKETSERVER_H__
 #define __WEBSOCKETSERVER_H__
 
+#define DEBUG 1
+
 /*	Libwebsockets Includes.	*/
 #include <getopt.h>
 #include <libwebsockets.h>
 #include "MonkeyMediaProcessor.h"
+#include <iostream>
 
 extern MonkeyMediaProcessor* mmp;
 extern unsigned int position;
@@ -57,11 +60,17 @@ static int callback_save_data(	struct libwebsocket_context * that,
 			if (remaining == 0)
 			{
 				#if DEBUG
-					cout <<  "Done receiving data. Got " << position << " Bytes." << endl;
+					cout << "Done receiving data. Got " << position << " Bytes." << endl;
 				#endif
 				
 				char* xml_string = new char[position];
 				memcpy(xml_string, recv_buffer, position);
+				#if DEBUG
+					for (int i = 0; i < 200; i++) {
+						cout << xml_string[i];
+					}
+					cout << endl << endl;
+				#endif
 				mmp->process_monkey_data(xml_string, 1);
 				position = 0; // Reset position.
 			}
