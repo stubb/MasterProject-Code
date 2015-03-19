@@ -62,6 +62,7 @@ int main(int argc, char *argv[])
 	int num_used_sockets = 0;
 	int i;
 	int rc = 0;
+	int listening_port = 2000;
 
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER);
 	
@@ -78,10 +79,11 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	if(SDLNet_ResolveHost(&ip, NULL, 2000)==-1) {
+	if(SDLNet_ResolveHost(&ip, NULL, listening_port)==-1) {
 		printf("SDLNet_ResolveHost: %s\n", SDLNet_GetError());
 		exit(1);
 	}
+	printf("Listening on port %d\n", listening_port);
 
 	tcpsock = SDLNet_TCP_Open(&ip);
 	if(!tcpsock) {
