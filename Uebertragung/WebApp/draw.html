@@ -158,26 +158,10 @@
          $(sigCanvas).unbind("mousemove")
                      .unbind("mouseup")
                      .unbind("mouseout");
-         sendFile();
+		var _image_data = document.getElementById('canvasSignature').toDataURL("image/jpeg");
+		_image_data = _image_data.replace(/^data:image\/jpeg;base64,/ig, "");
+		sendPicture(document.getElementById('canvasSignature').width, document.getElementById('canvasSignature').height, _image_data, nwF);
       }
-      
-
-      var sendFile = function() {
-			var canvas = document.getElementById('canvasSignature');
-			var time = new Date();
-			var timeStr = time.toLocaleTimeString();
-			var xmlString = '<?xml version="1.0" encoding="UTF-8"?>';
-			xmlString += '<package>';
-			xmlString += '<user>' + nwF.localUserName + '</user>';
-			xmlString += '<type>image/png</type>';
-			xmlString += '<width>' + canvas.width +'</width>';
-			xmlString += '<height>' + canvas.height +'</height>';
-			xmlString += '<timestamp>' + timeStr + '</timestamp>';
-			xmlString += '<data>' + ua2text(canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data) + '</data>';
-			xmlString += '</package>';
-			nwF.sendData(xmlString);
-			console.log("Data sent!");
-		};
    </script>
    
 </head>
