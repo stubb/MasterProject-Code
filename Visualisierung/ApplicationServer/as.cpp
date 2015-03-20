@@ -14,7 +14,7 @@ MonkeyMediaProcessor *mmp = NULL;
 int main(int argc, char** argv)
 {
 	int NUMBER_OF_RENDERING_CLIENTS = 1;
-	vector<Rendering_Client> *rendering_clients = new vector<Rendering_Client>();
+	vector<Rendering_Client*> *rendering_clients = new vector<Rendering_Client*>();
 
 	int return_code = 0;
 	int libws_return_code = 0;
@@ -52,7 +52,7 @@ int main(int argc, char** argv)
 
 	if (return_code == 0 && rendering_clients->size() > 0)
 	{
-		mmp = new MonkeyMediaProcessor(NUMBER_OF_RENDERING_CLIENTS);
+		mmp = new MonkeyMediaProcessor(rendering_clients);
 		NetworkHandler* nwh = new NetworkHandler(port);
 		nwh->run();
 		nwh->destroy();

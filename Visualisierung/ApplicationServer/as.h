@@ -42,7 +42,7 @@ static struct option options[] = {
 //						CUSTOM FUNCTIONS
 //	============================================================
 
-static int init_rc_connections(vector<Rendering_Client> *rendering_client, vector<char*> *host_ips, int host_port)
+static int init_rc_connections(vector<Rendering_Client*> *rendering_client, vector<char*> *host_ips, int host_port)
 {
 	int rc = 0;
 
@@ -83,7 +83,7 @@ static int init_rc_connections(vector<Rendering_Client> *rendering_client, vecto
 			} while (socket == NULL && connection_tries < MAX_CONNECTIONS_TRIES) ;
 			if (socket != NULL && connection_tries < MAX_CONNECTIONS_TRIES)
 			{
-				Rendering_Client ren_cli = Rendering_Client(i, socket);
+				Rendering_Client *ren_cli = new Rendering_Client(i, socket);
 				rendering_client->push_back(ren_cli);
 			}
 		}

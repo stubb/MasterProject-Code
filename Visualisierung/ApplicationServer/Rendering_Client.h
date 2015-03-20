@@ -19,6 +19,11 @@ class Rendering_Client
 			identifier = id;
 			rc_tcpsock = s;
 		}
+		
+		TCPsocket get_socket() const
+		{
+			return rc_tcpsock;
+		}
 };
 
 #endif

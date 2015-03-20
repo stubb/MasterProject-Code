@@ -72,7 +72,10 @@ static int callback_save_data(	struct libwebsocket_context * that,
 					cout << endl << endl;
 				#endif
 				mmp->process_monkey_data(xml_string, position, 1);
+				mmp->send_to_renderers();
 				position = 0; // Reset position.
+				delete xml_string;
+				xml_string = NULL;
 			}
 			break;
 		}
