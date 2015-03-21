@@ -35,3 +35,4 @@ install_manifest.txt
 Visualisierung/ApplicationServer/*.png
 Visualisierung/ApplicationServer/*.jpg
 Visualisierung/ApplicationServer/*.bmp
+Visualisierung/RenderingClient/*.bmp

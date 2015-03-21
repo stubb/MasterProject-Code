@@ -156,7 +156,7 @@ int main(int argc, char *argv[])
 
 	int number_of_meta_informations = 6;
 	int number_of_color_channels = 3;
-	int *recv_buffer = (int*) malloc((1280 * 720 * number_of_color_channels) * sizeof(int));
+	int *recv_buffer = (int*) malloc(number_of_meta_informations * sizeof(int));
 	char *image_data = NULL;
 	int numberOfBytes = number_of_meta_informations * sizeof(int);
 	int position = 0;
@@ -192,15 +192,12 @@ int main(int argc, char *argv[])
 					recv_buffer = NULL;
 					recv_buffer = (int*) malloc((width * height * number_of_color_channels) * sizeof(int));
 				}
-				int receive_cycles = 0;
+
 				do
 				{
 					if (numberOfBytes - position > 0)
 					{
-						if (!receive_cycles)
-							rc = SDLNet_TCP_Recv(client_socket, recv_buffer + position, number_of_meta_informations * sizeof(int));
-						else
-							rc = SDLNet_TCP_Recv(client_socket, recv_buffer + position, numberOfBytes - position);
+						rc = SDLNet_TCP_Recv(client_socket, recv_buffer + position, numberOfBytes - position);
 						if (rc < 0)
 						{
 							printf("SDLNet_TCP_Recv failed with Code %i %i ...exit\n", rc, errno);
@@ -214,13 +211,10 @@ int main(int argc, char *argv[])
 					else
 						rc = 0;
 
-					if (!receive_cycles)
-						printf("%i %i %i %i %i %i\n", recv_buffer[0], recv_buffer[1], recv_buffer[2], recv_buffer[3], recv_buffer[4], recv_buffer[5]);
-
+					// We received Meta Data, set rc to 0 to exit the Loop.
 					if (recv_buffer[0] == 1337 && recv_buffer[1] == 1337 && recv_buffer[2] == 1337 && recv_buffer[3] == 1337)
 						rc = 0;
-					else
-						++receive_cycles;
+
 				} while (rc != 0) ;
 
 				if (recv_buffer[0] == 1337 && recv_buffer[1] == 1337 && recv_buffer[2] == 1337 && recv_buffer[3] == 1337)
@@ -244,6 +238,8 @@ int main(int argc, char *argv[])
 					image_data = (char*) malloc(numberOfBytes * sizeof(char));
 					memcpy(image_data, (char*)recv_buffer, numberOfBytes);
 
+					SDL_Surface *surf = SDL_CreateRGBSurfaceFrom((void*)image_data, width, height, 24, width*3, 0xFF0000, 0x00FF00, 0x0000FF, 0xFFFFFF);
+					SDL_SaveBMP(surf, "FOO.bmp");
 					for (i = 0; i < ds.num_displays; ++i)
 					{
 						ds.display[i].texture = SDL_CreateTexture(ds.display[i].renderer, SDL_PIXELFORMAT_BGR24, SDL_TEXTUREACCESS_STREAMING, width, height);						
