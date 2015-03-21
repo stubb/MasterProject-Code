@@ -9,7 +9,6 @@
 #include <stdint.h>
 
 #define DEBUG 1
-#define NUMBER_OF_COLOR_CHANNELS 3
 
 struct DisplayInfo {
 	SDL_Window *window;
@@ -154,23 +153,12 @@ int main(int argc, char *argv[])
 			exit(EXIT_FAILURE);
 		}
 	}
-	
-	// get meta_data
-	/*int meta_data[2] = {0};
-	while (rc <= 0) {
-		rc = SDLNet_TCP_Recv(client, meta_data, sizeof(int) * 2);
-		if (rc <= 0)
-		{
-			printf("Receive of Metadata failed! Error %i\n", rc);
-			SDL_Delay(1000);
-		}
-	}
-	printf("%i %i\n", meta_data[0], meta_data[1]);*/
 
-	//for (int i = 0; i < ds.num_displays; ++i)
-
-	uint32_t *recv_buffer = (uint32_t*) malloc((1280 * 720 * NUMBER_OF_COLOR_CHANNELS) * sizeof(uint32_t));
-	int numberOfBytes = 24;
+	int number_of_meta_informations = 6;
+	int number_of_color_channels = 3;
+	int *recv_buffer = (int*) malloc((1280 * 720 * number_of_color_channels) * sizeof(int));
+	char *image_data = NULL;
+	int numberOfBytes = number_of_meta_informations * sizeof(int);
 	int position = 0;
 	int width = 0;
 	int height = 0;
@@ -194,39 +182,66 @@ int main(int argc, char *argv[])
 			// check all sockets with SDLNet_SocketReady and handle the active ones.
 			if(SDLNet_SocketReady(client_socket))
 			{
+				#if DEBUG
 				printf("Starting to receive the data. Awaiting %i Bytes total.\n", numberOfBytes);
+				#endif
 				// Receive the Data.
+				if (width != 0 && height != 0)
+				{
+					free(recv_buffer);
+					recv_buffer = NULL;
+					recv_buffer = (int*) malloc((width * height * number_of_color_channels) * sizeof(int));
+				}
+				int receive_cycles = 0;
 				do
 				{
 					if (numberOfBytes - position > 0)
 					{
-						rc = SDLNet_TCP_Recv(client_socket, recv_buffer + position, numberOfBytes - position);
+						if (!receive_cycles)
+							rc = SDLNet_TCP_Recv(client_socket, recv_buffer + position, number_of_meta_informations * sizeof(int));
+						else
+							rc = SDLNet_TCP_Recv(client_socket, recv_buffer + position, numberOfBytes - position);
 						if (rc < 0)
 						{
 							printf("SDLNet_TCP_Recv failed with Code %i %i ...exit\n", rc, errno);
 							return 1;
 						}
-						printf("Current Length: %i and last Length: %i\n", position, rc);
+						#if DEBUG
+						printf("Total Received: %i Bytes, Last Received: %i Bytes\n", position, rc);
+						#endif
 						position += rc;
 					}
 					else
 						rc = 0;
 
+					if (!receive_cycles)
+						printf("%i %i %i %i %i %i\n", recv_buffer[0], recv_buffer[1], recv_buffer[2], recv_buffer[3], recv_buffer[4], recv_buffer[5]);
+
+					if (recv_buffer[0] == 1337 && recv_buffer[1] == 1337 && recv_buffer[2] == 1337 && recv_buffer[3] == 1337)
+						rc = 0;
+					else
+						++receive_cycles;
 				} while (rc != 0) ;
 
 				if (recv_buffer[0] == 1337 && recv_buffer[1] == 1337 && recv_buffer[2] == 1337 && recv_buffer[3] == 1337)
 				{
 					width = recv_buffer[4];
 					height = recv_buffer[5];
-					numberOfBytes = width * height * 3;
+					numberOfBytes = width * height * number_of_color_channels;
+
 					#if DEBUG
 					printf("Received Meta-Data. Width %i, Height %i\n", width, height);
 					#endif
 				}
 				else
 				{
-					printf("Process Data.\n");
-					char *image_data = (char*) malloc(numberOfBytes * sizeof(char));
+					#if DEBUG
+					printf("Received Picture-Data. Process Data...\n");
+					#endif
+
+					free(image_data);
+					image_data = NULL;
+					image_data = (char*) malloc(numberOfBytes * sizeof(char));
 					memcpy(image_data, (char*)recv_buffer, numberOfBytes);
 
 					for (i = 0; i < ds.num_displays; ++i)
@@ -234,7 +249,7 @@ int main(int argc, char *argv[])
 						ds.display[i].texture = SDL_CreateTexture(ds.display[i].renderer, SDL_PIXELFORMAT_BGR24, SDL_TEXTUREACCESS_STREAMING, width, height);						
 						
 						SDL_Rect slice = {i * width / ds.num_displays, 0, width / ds.num_displays, height};
-						if (SDL_UpdateTexture(ds.display[i].texture, NULL, (void *) image_data, width * NUMBER_OF_COLOR_CHANNELS) < 0)
+						if (SDL_UpdateTexture(ds.display[i].texture, NULL, (void *)image_data, width * number_of_color_channels) < 0)
 						{
 							fprintf(stderr, "SDL_UpdateTexture: %s\n", SDL_GetError());
 							exit(EXIT_FAILURE);
@@ -243,14 +258,16 @@ int main(int argc, char *argv[])
 						SDL_RenderCopy(ds.display[i].renderer, ds.display[i].texture, &slice, NULL);			
 						SDL_RenderPresent(ds.display[i].renderer);
 					}
-					free(image_data);
 				}
 				position = 0;
 			}
 		}
 	}
-	
+
+	free(image_data);
+	image_data = NULL;
 	free(recv_buffer);
+	recv_buffer = NULL;
 	for (i = 0; i < ds.num_displays; ++i)
 	{
 		SDL_DestroyTexture(ds.display[i].texture);
