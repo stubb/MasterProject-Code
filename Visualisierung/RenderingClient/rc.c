@@ -230,7 +230,8 @@ int main(int argc, char *argv[])
 					width = recv_buffer[4];
 					height = recv_buffer[5];
 					number_of_bytes = width * height * number_of_color_channels;
-					image_data = (char*) realloc(image_data, number_of_bytes * sizeof(char));
+					free(image_data);
+					image_data = (char*) malloc(number_of_bytes * sizeof(char));
 
 					#if DEBUG
 					printf("Received Meta-Data. Width %i, Height %i\n", width, height);
@@ -240,12 +241,15 @@ int main(int argc, char *argv[])
 				{
 					#if DEBUG
 					printf("Received Picture-Data. Process Data...\n");
-					SDL_Surface *surf = SDL_CreateRGBSurfaceFrom((void*)image_data, width, height, 24, width*3, 0xFF0000, 0x00FF00, 0x0000FF, 0xFFFFFF);
+					SDL_Surface *surf = SDL_CreateRGBSurfaceFrom((void*)image_data, width, height, 24, width * number_of_color_channels, 0xFF0000, 0x00FF00, 0x0000FF, 0xFFFFFF);
 					SDL_SaveBMP(surf, "FOO.bmp");
+					SDL_FreeSurface(surf);
+					surf = NULL;
 					#endif
 
 					for (i = 0; i < ds.num_displays; ++i)
 					{
+						SDL_DestroyTexture(ds.display[i].texture);
 						ds.display[i].texture = SDL_CreateTexture(ds.display[i].renderer, SDL_PIXELFORMAT_BGR24, SDL_TEXTUREACCESS_STREAMING, width, height);						
 						
 						SDL_Rect slice = {i * width / ds.num_displays, 0, width / ds.num_displays, height};
