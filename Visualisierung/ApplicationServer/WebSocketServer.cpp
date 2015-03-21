@@ -8,6 +8,7 @@ using namespace std;
 
 unsigned int position = 0;
 char* recv_buffer = new char[104857600]; // 100 MB Buffer.
+char* xml_string = new char[1];
 
 WebSocketServer::WebSocketServer(){
 	init();

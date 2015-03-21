@@ -12,6 +12,7 @@
 extern MonkeyMediaProcessor* mmp;
 extern unsigned int position;
 extern char* recv_buffer;
+extern char* xml_string;
 
 using namespace std;
 
@@ -32,21 +33,21 @@ class WebSocketServer {
 };
 
 static int callback_http(	struct libwebsocket_context * that,
-					struct libwebsocket *wsi,
-				   enum libwebsocket_callback_reasons reason,
-				   void *user,
-				   void *in,
-				   size_t len)
+							struct libwebsocket *wsi,
+							enum libwebsocket_callback_reasons reason,
+							void *user,
+							void *in,
+							size_t len)
 {
 	return 0;
 }
 
 static int callback_save_data(	struct libwebsocket_context * that,
-						struct libwebsocket *wsi,
-						enum libwebsocket_callback_reasons reason,
-						void *user,
-						void *in,
-						size_t len)
+								struct libwebsocket *wsi,
+								enum libwebsocket_callback_reasons reason,
+								void *user,
+								void *in,
+								size_t len)
 {
 	switch (reason)
 	{
@@ -62,13 +63,19 @@ static int callback_save_data(	struct libwebsocket_context * that,
 				#if DEBUG
 					cout << "Done receiving data. Got " << position << " Bytes." << endl;
 				#endif
-				
-				char* xml_string = new char[position];
+
+				// Delete last XML File and allocate new Memeory for new File.
+				delete [] xml_string;
+				xml_string = new char[position];
+
+				// Copy received Data into XML File Buffer.
 				memcpy(xml_string, recv_buffer, position);
-				mmp->process_monkey_data(xml_string, position, 1);
+
+				// Process the XML File and send Results to RCs.
+				mmp->process_monkey_data(xml_string, position);
 				mmp->send_to_renderers();
+
 				position = 0; // Reset position.
-				//TODO: Cleanup Memory.
 			}
 			break;
 		}

@@ -64,7 +64,16 @@ class MonkeyMediaProcessor
 			// OpenCV imdecode needs a vector instead of a unsigned char* array,
 			// so we do a quick conversion.
 			vector<unsigned char> picture_raw_vector(picture_raw, picture_raw + output);
+			
+			// Delete old Stuff, or else Memory will Bloat.
+			free(picture_raw);
+			picture_raw = NULL;
 
+			// Decoded Image holds almost no Data, because the Mat Points to the current
+			// picture_raw_vector vector. Still delete it to free the Properties of the Mat.
+			decoded_image->release();
+			
+			// Decode Picture from Memory to Mat.
 			imdecode(picture_raw_vector, 1, decoded_image);
 
 			#if DEBUG
@@ -83,20 +92,17 @@ class MonkeyMediaProcessor
 		
 		void split_image()
 		{
+			// Delete old Split Pictures and clear Vector.
+			for (unsigned int i = 0; i < processed_images->size(); ++i)
+				processed_images->at(i)->release();
 			processed_images->clear();
+			
+			// Generate Split Pictures and put them into the Vector.
 			for (unsigned int i = 0; i < rendering_clients->size() /*&& rendering_clients->size() > 1*/; ++i)
 			{
 				Rect rect(decoded_image->cols / rendering_clients->size() * i, 0, decoded_image->cols / rendering_clients->size(), decoded_image->rows);
 				Mat *temp_image = new Mat(*decoded_image, rect);
 				processed_images->push_back(temp_image);
-			}
-		}
-		
-		void reshape_images()
-		{
-			for (unsigned int i = 0; i < processed_images->size(); ++i)
-			{
-				processed_images->at(i)->reshape(0, 1);
 			}
 		}
 
@@ -171,7 +177,7 @@ class MonkeyMediaProcessor
 		//	====================================================
 		//					PUBLIC METHODS
 		//	====================================================
-		void process_monkey_data(char *xml_string, unsigned int xml_string_size, int with_reshape)
+		void process_monkey_data(char *xml_string, unsigned int xml_string_size)
 		{
 			XMLDocument monkey_document;
 			monkey_document.Parse(xml_string, xml_string_size);
@@ -190,9 +196,7 @@ class MonkeyMediaProcessor
 				if (mime.compare("picture") == 0)
 					rc = process_picture(monkey_document.FirstChildElement("package")->FirstChildElement("data")->GetText());
 				if (rc)
-				{
 					split_image();
-				}
 			}
 		}
 		
