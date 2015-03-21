@@ -156,9 +156,9 @@ int main(int argc, char *argv[])
 
 	int number_of_meta_informations = 6;
 	int number_of_color_channels = 3;
-	int *recv_buffer = (int*) malloc(number_of_meta_informations * sizeof(int));
+	int *recv_buffer = (int*) malloc(1280 * 720 * 3 * sizeof(int)); // Maximum allowed Size.
 	char *image_data = NULL;
-	int numberOfBytes = number_of_meta_informations * sizeof(int);
+	int number_of_bytes = number_of_meta_informations * sizeof(int);
 	int position = 0;
 	int width = 0;
 	int height = 0;
@@ -183,44 +183,35 @@ int main(int argc, char *argv[])
 			if(SDLNet_SocketReady(client_socket))
 			{
 				#if DEBUG
-				printf("Starting to receive the data. Awaiting %i Bytes total.\n", numberOfBytes);
+				printf("Starting to receive the data. Awaiting %i Bytes total.\n", number_of_bytes);
 				#endif
 				// Receive the Data.
-				if (width != 0 && height != 0)
-				{
-					free(recv_buffer);
-					recv_buffer = NULL;
-					recv_buffer = (int*) calloc((width * height * number_of_color_channels), sizeof(int));
-					image_data = (char*) malloc(numberOfBytes * sizeof(char));
-				}
-
+				int recv_cycle = 0;
 				do
 				{
-					if (numberOfBytes - position > 0)
+					++recv_cycle;
+					if (number_of_bytes - position > 0)
 					{
-						if (width == 0 && height == 0) {
-							printf("recv      : %p\n", recv_buffer);
-							printf("position  : %i\n", position);
-							printf("Writing to: %p\n", recv_buffer + position);
-							printf("%i\n", (int) *recv_buffer + position);
-							rc = SDLNet_TCP_Recv(client_socket, recv_buffer + position, numberOfBytes - position);
-							printf("%i\n", (int) *recv_buffer + position);
-							printf("%i\n", (int) *recv_buffer + position + 1);
-							if (rc < 0)
-							{
-								printf("SDLNet_TCP_Recv failed with Code %i %i ...exit\n", rc, errno);
-								return 1;
-							}
-							#if DEBUG
-							printf("Total Received: %i Bytes, Last Received: %i Bytes\n", position, rc);
-							#endif
-							position += rc;
+						// Receive Data. First Cycle into the Big recv_buffer, because it could be Meta Data (int).
+						// Second time we know its Picture Data, so put everything into image_data.
+						if (recv_cycle < 2)
+							rc = SDLNet_TCP_Recv(client_socket, recv_buffer + position, number_of_bytes - position);
+						else
+							rc = SDLNet_TCP_Recv(client_socket, image_data + position, number_of_bytes - position);
+
+						// Socket Connection OK?
+						if (rc < 0)
+						{
+							printf("SDLNet_TCP_Recv failed with Code %i %i ...exit\n", rc, errno);
+							return 1;
 						}
-						else {
-							//hier kommen bilder
-							rc = SDLNet_TCP_Recv(client_socket, image_data + position, numberOfBytes - position);
-							position += rc;
-						}
+
+						#if DEBUG
+						printf("Total Received: %i Bytes, Last Received: %i Bytes\n", position, rc);
+						#endif
+
+						// Advance Position for received Bytes.
+						position += rc;
 					}
 					else
 						rc = 0;
@@ -228,14 +219,18 @@ int main(int argc, char *argv[])
 					// We received Meta Data, set rc to 0 to exit the Loop.
 					if (recv_buffer[0] == 1337 && recv_buffer[1] == 1337 && recv_buffer[2] == 1337 && recv_buffer[3] == 1337)
 						rc = 0;
-
+					// First Receive and it were no Meta Data, so it must be a Picture.
+					// Copy it to image_data.
+					else if (recv_cycle == 1)
+						memcpy(image_data, (char*)recv_buffer, rc);
 				} while (rc != 0) ;
 
 				if (recv_buffer[0] == 1337 && recv_buffer[1] == 1337 && recv_buffer[2] == 1337 && recv_buffer[3] == 1337)
 				{
 					width = recv_buffer[4];
 					height = recv_buffer[5];
-					numberOfBytes = width * height * number_of_color_channels;
+					number_of_bytes = width * height * number_of_color_channels;
+					image_data = (char*) realloc(image_data, number_of_bytes * sizeof(char));
 
 					#if DEBUG
 					printf("Received Meta-Data. Width %i, Height %i\n", width, height);
@@ -245,15 +240,10 @@ int main(int argc, char *argv[])
 				{
 					#if DEBUG
 					printf("Received Picture-Data. Process Data...\n");
-					#endif
-
-					//free(image_data);
-					//image_data = NULL;
-					//image_data = (char*) malloc(numberOfBytes * sizeof(char));
-					//memcpy(image_data, (char*)recv_buffer, numberOfBytes);
-
 					SDL_Surface *surf = SDL_CreateRGBSurfaceFrom((void*)image_data, width, height, 24, width*3, 0xFF0000, 0x00FF00, 0x0000FF, 0xFFFFFF);
 					SDL_SaveBMP(surf, "FOO.bmp");
+					#endif
+
 					for (i = 0; i < ds.num_displays; ++i)
 					{
 						ds.display[i].texture = SDL_CreateTexture(ds.display[i].renderer, SDL_PIXELFORMAT_BGR24, SDL_TEXTUREACCESS_STREAMING, width, height);						
