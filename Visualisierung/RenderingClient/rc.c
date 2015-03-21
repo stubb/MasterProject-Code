@@ -190,23 +190,37 @@ int main(int argc, char *argv[])
 				{
 					free(recv_buffer);
 					recv_buffer = NULL;
-					recv_buffer = (int*) malloc((width * height * number_of_color_channels) * sizeof(int));
+					recv_buffer = (int*) calloc((width * height * number_of_color_channels), sizeof(int));
+					image_data = (char*) malloc(numberOfBytes * sizeof(char));
 				}
 
 				do
 				{
 					if (numberOfBytes - position > 0)
 					{
-						rc = SDLNet_TCP_Recv(client_socket, recv_buffer + position, numberOfBytes - position);
-						if (rc < 0)
-						{
-							printf("SDLNet_TCP_Recv failed with Code %i %i ...exit\n", rc, errno);
-							return 1;
+						if (width == 0 && height == 0) {
+							printf("recv      : %p\n", recv_buffer);
+							printf("position  : %i\n", position);
+							printf("Writing to: %p\n", recv_buffer + position);
+							printf("%i\n", (int) *recv_buffer + position);
+							rc = SDLNet_TCP_Recv(client_socket, recv_buffer + position, numberOfBytes - position);
+							printf("%i\n", (int) *recv_buffer + position);
+							printf("%i\n", (int) *recv_buffer + position + 1);
+							if (rc < 0)
+							{
+								printf("SDLNet_TCP_Recv failed with Code %i %i ...exit\n", rc, errno);
+								return 1;
+							}
+							#if DEBUG
+							printf("Total Received: %i Bytes, Last Received: %i Bytes\n", position, rc);
+							#endif
+							position += rc;
 						}
-						#if DEBUG
-						printf("Total Received: %i Bytes, Last Received: %i Bytes\n", position, rc);
-						#endif
-						position += rc;
+						else {
+							//hier kommen bilder
+							rc = SDLNet_TCP_Recv(client_socket, image_data + position, numberOfBytes - position);
+							position += rc;
+						}
 					}
 					else
 						rc = 0;
@@ -233,10 +247,10 @@ int main(int argc, char *argv[])
 					printf("Received Picture-Data. Process Data...\n");
 					#endif
 
-					free(image_data);
-					image_data = NULL;
-					image_data = (char*) malloc(numberOfBytes * sizeof(char));
-					memcpy(image_data, (char*)recv_buffer, numberOfBytes);
+					//free(image_data);
+					//image_data = NULL;
+					//image_data = (char*) malloc(numberOfBytes * sizeof(char));
+					//memcpy(image_data, (char*)recv_buffer, numberOfBytes);
 
 					SDL_Surface *surf = SDL_CreateRGBSurfaceFrom((void*)image_data, width, height, 24, width*3, 0xFF0000, 0x00FF00, 0x0000FF, 0xFFFFFF);
 					SDL_SaveBMP(surf, "FOO.bmp");
