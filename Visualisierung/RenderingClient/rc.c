@@ -143,8 +143,10 @@ int main(int argc, char *argv[])
 		char title[] = "Window 0";
 		title[sizeof(title) - 2] += (char) i;
 
-		ds.display[i].window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED_DISPLAY(i), SDL_WINDOWPOS_CENTERED_DISPLAY(i), 640, 480, 0);//SDL_WINDOW_FULLSCREEN_DESKTOP);
+		ds.display[i].window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED_DISPLAY(i), SDL_WINDOWPOS_CENTERED_DISPLAY(i), 640, 480, SDL_WINDOW_FULLSCREEN_DESKTOP);
 		ds.display[i].renderer = SDL_CreateRenderer(ds.display[i].window, -1, 0);
+		SDL_SetRenderDrawColor(ds.display[i].renderer, 0, 0, 0, 255 );
+		SDL_RenderPresent(ds.display[i].renderer);
 		SDL_Delay(1000);
 
 		if (ds.display[i].window == NULL)
@@ -163,7 +165,6 @@ int main(int argc, char *argv[])
 	int position = 0;
 	int width = 0;
 	int height = 0;
-	int exit_loop = 0;
 	
 	while (!PollEvents())
 	{
