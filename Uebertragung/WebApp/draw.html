@@ -73,6 +73,8 @@ function initialize() {
 // get references to the canvas element as well as the 2D drawing context
 var sigCanvas = document.getElementById("canvasSignature");
 var context = sigCanvas.getContext("2d");
+context.fillStyle = 'White';
+context.fillRect(0,0,$('#canvasSignature').outerWidth(false),$('#canvasSignature').outerHeight(false));
 context.strokeStyle = 'Black';
 // This will be defined on a TOUCH device such as iPad or Android, etc.
 var is_touch_device = 'ontouchstart' in document.documentElement;
