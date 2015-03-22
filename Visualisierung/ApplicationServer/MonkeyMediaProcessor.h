@@ -212,7 +212,7 @@ class MonkeyMediaProcessor
 			if (processed_images->size() > 0)
 			{
 				// Different Resolution -> Send new Metadata with Current Values.
-				if (last_image_width != processed_images->at(0)->cols &&
+				if (last_image_width != processed_images->at(0)->cols ||
 					last_image_height != processed_images->at(0)->rows)
 				{
 					int meta_data[] = {1337, 1337, 1337, 1337, processed_images->at(0)->cols, processed_images->at(0)->rows};
