@@ -75,19 +75,26 @@ class MonkeyMediaProcessor
 			
 			// Decode Picture from Memory to Mat.
 			imdecode(picture_raw_vector, 1, decoded_image);
+			if (decoded_image->total() * decoded_image->channels() > 24)
+			{
+				#if DEBUG
+					fstream imgout("./test.png", std::fstream::out | std::fstream::binary);
+					imgout.write(reinterpret_cast<char*>(picture_raw), output);
+					imgout.close();
+					
+					imwrite( "./testMat.jpg", *decoded_image );
+				#endif
 
-			#if DEBUG
-				fstream imgout("./test.png", std::fstream::out | std::fstream::binary);
-				imgout.write(reinterpret_cast<char*>(picture_raw), output);
-				imgout.close();
+				if (decoded_image->total() <= 0)
+					cerr << "Something went wrong while decoding the Picture." << endl;
 				
-				imwrite( "./testMat.jpg", *decoded_image );
-			#endif
-
-			if (decoded_image->total() <= 0)
-				cout << "Kacka Sir!" << endl;
-			
-			return 1;
+				return 1;
+			}
+			else
+			{
+				cerr << "Error: Picture sent was too small. sry :)" << endl;
+				return 0;
+			}
 		}
 		
 		void split_image()
@@ -202,20 +209,23 @@ class MonkeyMediaProcessor
 		
 		void send_to_renderers()
 		{
-			// Different Resolution -> Send new Metadata with Current Values.
-			if (last_image_width != processed_images->at(0)->cols &&
-				last_image_height != processed_images->at(0)->rows)
+			if (processed_images->size() > 0)
 			{
-				int meta_data[] = {1337, 1337, 1337, 1337, processed_images->at(0)->cols, processed_images->at(0)->rows};
+				// Different Resolution -> Send new Metadata with Current Values.
+				if (last_image_width != processed_images->at(0)->cols &&
+					last_image_height != processed_images->at(0)->rows)
+				{
+					int meta_data[] = {1337, 1337, 1337, 1337, processed_images->at(0)->cols, processed_images->at(0)->rows};
+					for (unsigned int i = 0; i < rendering_clients->size(); ++i)
+						SDLNet_TCP_Send(rendering_clients->at(i)->get_socket(), (void*)meta_data, sizeof(meta_data));
+				}
 				for (unsigned int i = 0; i < rendering_clients->size(); ++i)
-					SDLNet_TCP_Send(rendering_clients->at(i)->get_socket(), (void*)meta_data, sizeof(meta_data));
-			}
-			for (unsigned int i = 0; i < rendering_clients->size(); ++i)
-			{
-				#if DEBUG
-				cout << "Will send " << processed_images->at(i)->total() * processed_images->at(i)->channels() << " Bytes per RC." << endl;
-				#endif
-				SDLNet_TCP_Send(rendering_clients->at(i)->get_socket(), (void*)processed_images->at(i)->data, processed_images->at(i)->total() * processed_images->at(i)->channels());
+				{
+					#if DEBUG
+					cout << "Will send " << processed_images->at(i)->total() * processed_images->at(i)->channels() << " Bytes per RC." << endl;
+					#endif
+					SDLNet_TCP_Send(rendering_clients->at(i)->get_socket(), (void*)processed_images->at(i)->data, processed_images->at(i)->total() * processed_images->at(i)->channels());
+				}
 			}
 		}
 };

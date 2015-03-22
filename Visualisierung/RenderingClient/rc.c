@@ -155,13 +155,15 @@ int main(int argc, char *argv[])
 	}
 
 	int number_of_meta_informations = 6;
+	int meta_informations_size = number_of_meta_informations * sizeof(int);
 	int number_of_color_channels = 3;
 	int *recv_buffer = (int*) malloc(1280 * 720 * 3 * sizeof(int)); // Maximum allowed Size.
 	char *image_data = NULL;
-	int number_of_bytes = number_of_meta_informations * sizeof(int);
+	int number_of_bytes = meta_informations_size;
 	int position = 0;
 	int width = 0;
 	int height = 0;
+	int exit_loop = 0;
 	
 	while (!PollEvents())
 	{
@@ -218,50 +220,58 @@ int main(int argc, char *argv[])
 
 					// We received Meta Data, set rc to 0 to exit the Loop.
 					if (recv_buffer[0] == 1337 && recv_buffer[1] == 1337 && recv_buffer[2] == 1337 && recv_buffer[3] == 1337)
-						rc = 0;
+					{
+						width = recv_buffer[4];
+						height = recv_buffer[5];
+						number_of_bytes = width * height * number_of_color_channels;
+						free(image_data);
+						image_data = (char*) malloc(number_of_bytes * sizeof(char));
+
+						#if DEBUG
+						printf("Received Meta-Data. Width %i, Height %i\n", width, height);
+						#endif
+						
+						if (rc > meta_informations_size)
+						{
+							memcpy(image_data, (char*)recv_buffer + meta_informations_size, rc - meta_informations_size);
+							position -= meta_informations_size;
+						}
+						else
+							rc = 0;
+						
+						recv_buffer[0] = 0;
+						recv_buffer[1] = 0;
+						recv_buffer[2] = 0;
+						recv_buffer[3] = 0;
+					}
 					// First Receive and it were no Meta Data, so it must be a Picture.
 					// Copy it to image_data.
 					else if (recv_cycle == 1)
 						memcpy(image_data, (char*)recv_buffer, rc);
 				} while (rc != 0) ;
 
-				if (recv_buffer[0] == 1337 && recv_buffer[1] == 1337 && recv_buffer[2] == 1337 && recv_buffer[3] == 1337)
-				{
-					width = recv_buffer[4];
-					height = recv_buffer[5];
-					number_of_bytes = width * height * number_of_color_channels;
-					free(image_data);
-					image_data = (char*) malloc(number_of_bytes * sizeof(char));
+				#if DEBUG
+				printf("Received Picture-Data. Process Data...\n");
+				SDL_Surface *surf = SDL_CreateRGBSurfaceFrom((void*)image_data, width, height, 24, width * number_of_color_channels, 0xFF0000, 0x00FF00, 0x0000FF, 0xFFFFFF);
+				SDL_SaveBMP(surf, "FOO.bmp");
+				SDL_FreeSurface(surf);
+				surf = NULL;
+				#endif
 
-					#if DEBUG
-					printf("Received Meta-Data. Width %i, Height %i\n", width, height);
-					#endif
-				}
-				else
+				for (i = 0; i < ds.num_displays; ++i)
 				{
-					#if DEBUG
-					printf("Received Picture-Data. Process Data...\n");
-					SDL_Surface *surf = SDL_CreateRGBSurfaceFrom((void*)image_data, width, height, 24, width * number_of_color_channels, 0xFF0000, 0x00FF00, 0x0000FF, 0xFFFFFF);
-					SDL_SaveBMP(surf, "FOO.bmp");
-					SDL_FreeSurface(surf);
-					surf = NULL;
-					#endif
-
-					for (i = 0; i < ds.num_displays; ++i)
+					SDL_DestroyTexture(ds.display[i].texture);
+					ds.display[i].texture = SDL_CreateTexture(ds.display[i].renderer, SDL_PIXELFORMAT_BGR24, SDL_TEXTUREACCESS_STREAMING, width, height);						
+					
+					SDL_Rect slice = {i * width / ds.num_displays, 0, width / ds.num_displays, height};
+					if (SDL_UpdateTexture(ds.display[i].texture, NULL, (void *)image_data, width * number_of_color_channels) < 0)
 					{
-						SDL_DestroyTexture(ds.display[i].texture);
-						ds.display[i].texture = SDL_CreateTexture(ds.display[i].renderer, SDL_PIXELFORMAT_BGR24, SDL_TEXTUREACCESS_STREAMING, width, height);						
-						
-						SDL_Rect slice = {i * width / ds.num_displays, 0, width / ds.num_displays, height};
-						if (SDL_UpdateTexture(ds.display[i].texture, NULL, (void *)image_data, width * number_of_color_channels) < 0)
-						{
-							fprintf(stderr, "SDL_UpdateTexture: %s\n", SDL_GetError());
-							exit(EXIT_FAILURE);
-						}
-						SDL_RenderClear(ds.display[i].renderer);
-						SDL_RenderCopy(ds.display[i].renderer, ds.display[i].texture, &slice, NULL);			
-						SDL_RenderPresent(ds.display[i].renderer);
+						fprintf(stderr, "SDL_UpdateTexture: %s\n", SDL_GetError());
+						exit(EXIT_FAILURE);
 					}
+					SDL_RenderClear(ds.display[i].renderer);
+					SDL_RenderCopy(ds.display[i].renderer, ds.display[i].texture, &slice, NULL);			
+					SDL_RenderPresent(ds.display[i].renderer);
 				}
 				position = 0;
 			}
