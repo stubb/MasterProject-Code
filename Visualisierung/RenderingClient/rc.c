@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <sys/types.h>
 #include <errno.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_net.h>
@@ -8,7 +7,7 @@
 #include <inttypes.h>
 #include <stdint.h>
 
-#define DEBUG 1
+#define DEBUG 0
 
 struct DisplayInfo {
 	SDL_Window *window;
@@ -145,8 +144,6 @@ int main(int argc, char *argv[])
 
 		ds.display[i].window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED_DISPLAY(i), SDL_WINDOWPOS_CENTERED_DISPLAY(i), 640, 480, SDL_WINDOW_FULLSCREEN_DESKTOP);
 		ds.display[i].renderer = SDL_CreateRenderer(ds.display[i].window, -1, 0);
-		SDL_SetRenderDrawColor(ds.display[i].renderer, 0, 0, 0, 255 );
-		SDL_RenderPresent(ds.display[i].renderer);
 		SDL_Delay(1000);
 
 		if (ds.display[i].window == NULL)
@@ -154,6 +151,11 @@ int main(int argc, char *argv[])
 			fprintf(stderr, "Couldn't init Window #%d (%s)", i, title);
 			exit(EXIT_FAILURE);
 		}
+	}
+	for (i = 0; i < ds.num_displays; ++i)
+	{
+		SDL_SetRenderDrawColor(ds.display[i].renderer, 0, 0, 0, 255 );
+		SDL_RenderPresent(ds.display[i].renderer);
 	}
 
 	int number_of_meta_informations = 6;
@@ -165,7 +167,7 @@ int main(int argc, char *argv[])
 	int position = 0;
 	int width = 0;
 	int height = 0;
-	
+
 	while (!PollEvents())
 	{
 		// Check Network for Activity.
