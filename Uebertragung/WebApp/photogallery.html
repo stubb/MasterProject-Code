@@ -26,7 +26,7 @@
 			<input id="filechooser" type="file" accept="image/*" autofocus onchange="loadFile(event)">
 			<input type="button" onclick="sendFile()" value="Send"/>
 		</form>
-		<canvas id="data_canvas"></canvas>
+		<canvas id="data_canvas" hidden></canvas>
 		<img id="preview_img" hidden></img>
 		<img id="data_img" hidden></img>
 	</div>
@@ -41,9 +41,14 @@
 		};
 
 		var sendFile = function() {
-			sendPicture($('#preview_canvas').get(0).width, $('#preview_canvas').get(0).height, _image_data, nwF);
+			if (sendPicture($('#preview_canvas').get(0).width, $('#preview_canvas').get(0).height, _image_data, nwF)) {
+				toastr.success("Photo sent!");
+			}
+			else {
+				toastr.error("No connection!");
+			}
 		};
-
+		
 		window.onbeforeunload = function() {
 			nwF.disconnect();
 		};

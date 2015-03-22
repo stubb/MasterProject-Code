@@ -64,10 +64,10 @@ var sendPicture = function(width, height, image_payload, facade) {
 	var result = facade.sendData(getXMLforPicture(width, height, image_payload));
 	if (result == 0) {
 		console.log("Photo sent! Dimensions " +  width + " x " + height);
-		toastr.success('Your photo was sent!');
+		return 1;
 	}
 	else {
-		toastr.error(result);
+		return 0;
 	}
 };
 

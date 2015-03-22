@@ -26,7 +26,12 @@
 		var _image_data = null;
 		
 		var sendFile = function() {
-			sendPicture($('#preview_canvas').get(0).width, $('#preview_canvas').get(0).height, _image_data, nwF);
+			if (sendPicture($('#preview_canvas').get(0).width, $('#preview_canvas').get(0).height, _image_data, nwF)) {
+				toastr.success("Photo sent!");
+			}
+			else {
+				toastr.error("No connection!");
+			}
 		};
 		
 		window.onbeforeunload = function() {
