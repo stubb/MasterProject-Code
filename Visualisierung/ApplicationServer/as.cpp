@@ -20,7 +20,7 @@ int main(int argc, char** argv)
 	int libws_return_code = 0;
 
 	vector<char*> *host_ips = new vector<char*>();
-	host_ips->push_back("10.0.1.1");
+	host_ips->push_back("10.0.1.2");
 
 	int host_port = 2000;
 	int port = 9000;
