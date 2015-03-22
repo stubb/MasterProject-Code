@@ -1,7 +1,7 @@
 #ifndef __WEBSOCKETSERVER_H__
 #define __WEBSOCKETSERVER_H__
 
-#define DEBUG 1
+#define DEBUG 0
 
 /*	Libwebsockets Includes.	*/
 #include <getopt.h>

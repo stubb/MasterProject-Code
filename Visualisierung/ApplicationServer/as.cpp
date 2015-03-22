@@ -1,5 +1,5 @@
 /*	Debug Mode.	*/
-#define DEBUG 1
+#define DEBUG 0
 
 /*	Picture Settings.	*/
 #define NUMBER_OF_COLOR_CHANNELS 3
@@ -20,7 +20,7 @@ int main(int argc, char** argv)
 	int libws_return_code = 0;
 
 	vector<char*> *host_ips = new vector<char*>();
-	host_ips->push_back("127.0.0.1");
+	host_ips->push_back("10.0.1.1");
 
 	int host_port = 2000;
 	int port = 9000;
