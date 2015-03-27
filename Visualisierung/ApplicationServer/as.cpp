@@ -4,53 +4,60 @@
 /*	Picture Settings.	*/
 #define NUMBER_OF_COLOR_CHANNELS 3
 
+/*	Standard Includes.	*/
+#include <iostream>
+#include <string>
+
+/*	OpenCV Includes.	*/
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
+/*	SDL2 Includes.	*/
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_net.h>
+
 /*	User Functions.	*/
-#include "as.h"
 #include "NetworkHandler.h"
+#include "Rendering_Client.h"
+#include "MonkeyMediaProcessor.h"
 
 // global var definitions
 MonkeyMediaProcessor *mmp = NULL;
 
 int main(int argc, char** argv)
 {
-	int NUMBER_OF_RENDERING_CLIENTS = 1;
 	vector<Rendering_Client*> *rendering_clients = new vector<Rendering_Client*>();
-
-	int return_code = 0;
-	int libws_return_code = 0;
-
-	vector<char*> *host_ips = new vector<char*>();
-	host_ips->push_back("10.0.1.2");
-
-	int host_port = 2000;
 	int port = 9000;
 
-	while (libws_return_code >= 0) {
-		libws_return_code = getopt_long(argc, argv, "ci:hsp:d:", options, NULL);
-		if (libws_return_code < 0)
-			continue;
-		switch (libws_return_code) {
-		case 'p':
-			port = atoi(optarg);
-			break;
-		case 'y':
-			host_port = atoi(optarg);
-			break;
-		case 'h':
-			cerr << "Usage: Applicationserver [--port=<p>]\n" << endl;
-			exit(1);
-		}
+	if (SDLNet_Init() < 0)
+	{
+		cerr << "SDLNet_Init: " << SDLNet_GetError() << endl;
+		exit(1);
 	}
 
-	#if DEBUG
-		for (unsigned int i = 0; i < host_ips->size(); ++i)
-			cout << "Host IP: " << host_ips->at(i) << endl;
-		cout << "Host Port: " << host_port << endl;
-	#endif
+	if (argc < 4 || (argc % 2 != 0))
+	{
+		cerr << "Usage: Applicationserver port renderingclient_ip1 rendering_client_port1 ...\n" << endl;
+		exit(1);
+	}
 
-	return_code = init_rc_connections(rendering_clients, host_ips, host_port);
+	port = atoi(argv[2]);
 
-	if (return_code == 0 && rendering_clients->size() > 0)
+	int name = 0;
+	// extract all rc infos
+	for (int i = 2; i < argc; i += 2)
+	{
+		#if DEBUG
+			cout << "Init Rendering_Client IP: " << argv[i] << " Port: " << argv[i + 1] << endl;
+		#endif
+		Rendering_Client *rc = new Rendering_Client(name);
+		if(rc->init(argv[i], atoi(argv[i + 1])))
+			rendering_clients->push_back(rc);
+		name++;
+	}
+
+	if (rendering_clients->size() > 0)
 	{
 		mmp = new MonkeyMediaProcessor(rendering_clients);
 		NetworkHandler* nwh = new NetworkHandler(port);
@@ -60,7 +67,7 @@ int main(int argc, char** argv)
 	else
 	{
 		cerr << "Couldn't establish Connections. Shutting down " << argv[0] << "." << endl;
-		return(return_code);
+		exit(1);
 	}
 	return(EXIT_SUCCESS);
 }

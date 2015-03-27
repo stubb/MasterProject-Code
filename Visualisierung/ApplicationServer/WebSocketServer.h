@@ -1,11 +1,9 @@
 #ifndef __WEBSOCKETSERVER_H__
 #define __WEBSOCKETSERVER_H__
 
-#define DEBUG 0
-
 /*	Libwebsockets Includes.	*/
-#include <getopt.h>
 #include <libwebsockets.h>
+
 #include "MonkeyMediaProcessor.h"
 #include <iostream>
 

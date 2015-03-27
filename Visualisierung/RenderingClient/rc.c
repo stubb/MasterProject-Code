@@ -58,6 +58,10 @@ int main(int argc, char *argv[])
 	IPaddress ip_adress;
 	int listening_port = 2000;
 
+	if (argc == 2) {
+		listening_port = atoi(argv[1]);
+	}
+
 	// Sockets.
 	TCPsocket server_socket = NULL;
 	TCPsocket client_socket = NULL;
