@@ -6,11 +6,23 @@
 
 #include "MonkeyMediaProcessor.h"
 #include <iostream>
+#include <sys/time.h>
+#include <stdio.h>
+#include <unistd.h>
 
 extern MonkeyMediaProcessor* mmp;
 extern unsigned int position;
 extern char* recv_buffer;
 extern char* xml_string;
+
+extern struct timeval compareTime;
+extern struct timeval startTime;
+extern struct timeval endTime;
+extern struct timeval oldTime;
+extern struct timeval currTime;
+extern struct timeval resTime;
+extern struct timeval allTime;
+extern int counter;
 
 using namespace std;
 
@@ -59,9 +71,16 @@ static int callback_save_data(	struct libwebsocket_context * that,
 			if (remaining == 0)
 			{
 				#if DEBUG
-					cout << "Done receiving data. Got " << position << " Bytes." << endl;
+					cout <<  position << " : ";
 				#endif
-
+					
+				if(!timercmp(&compareTime, &startTime, !=))
+				{
+					cout << "foo" << endl;
+					gettimeofday(&startTime, NULL);
+				}
+				
+				/*
 				// Delete last XML File and allocate new Memeory for new File.
 				delete [] xml_string;
 				xml_string = new char[position];
@@ -72,8 +91,20 @@ static int callback_save_data(	struct libwebsocket_context * that,
 				// Process the XML File and send Results to RCs.
 				mmp->process_monkey_data(xml_string, position);
 				mmp->send_to_renderers();
-
+				*/
+				
+				gettimeofday(&currTime, NULL);
+				gettimeofday(&endTime, NULL);
+				timersub(&currTime, &oldTime, &resTime);
+				printf("%ld.%06ld\n", (long int)resTime.tv_sec, (long int)resTime.tv_usec);
+				oldTime = currTime;
+				
 				position = 0; // Reset position.
+				counter++;
+				if (counter == 200 || counter == 400) {
+					timersub(&endTime, &startTime, &allTime);
+					printf("200 Entries: %ld.%06ld\n", (long int)allTime.tv_sec, (long int)allTime.tv_usec);
+				}
 			}
 			break;
 		}

@@ -42,7 +42,6 @@ var calcOptimalSize = function(width, height, maxWidth, upscale=false) {
 			new_height = (height * ratio);
 		}
 	}
-	console.log("optimal size: " + new_width + " x " + new_height);
 	return [new_width, new_height];
 };
 

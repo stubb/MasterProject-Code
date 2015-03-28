@@ -22,7 +22,12 @@
 			navigator.getUserMedia (
 				// constraints
 				{
-					video: true,
+					  video: {
+						mandatory: {
+							maxWidth: 1280,
+							maxHeight: 720,
+						}
+					},
 					audio: false
 				},
 
@@ -68,7 +73,7 @@
 		}
 	</script>
 	<div id="content_container">
-		<video id="video_tag">
+		<video id="video_tag" height="480" width="640">
 			Your browser does not support the video tag.
 		</video>
 		<button id="start_stream" onclick="toggleStartButton(nwF);">Start stream</button>

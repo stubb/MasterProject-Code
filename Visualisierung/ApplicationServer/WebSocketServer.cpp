@@ -10,6 +10,16 @@ unsigned int position = 0;
 char* recv_buffer = new char[104857600]; // 100 MB Buffer.
 char* xml_string = new char[1];
 
+struct timeval compareTime = (struct timeval){ 0 };
+struct timeval startTime;
+struct timeval endTime;
+struct timeval oldTime;
+struct timeval currTime;
+struct timeval resTime;
+struct timeval allTime;
+int counter = 0;
+
+
 WebSocketServer::WebSocketServer(){
 	init();
 }
@@ -36,7 +46,7 @@ int WebSocketServer::init() {
 }
 
 int WebSocketServer::run() {
-	return libwebsocket_service(context, 100);
+	return libwebsocket_service(context, 1);
 }
 
 void WebSocketServer::destroy() {

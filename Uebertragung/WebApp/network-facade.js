@@ -23,6 +23,9 @@ var NetworkFacade = function (protocol) {
 		console.log('NetworkFacade does not support protocol type ' + this.protocol);
 	}
 	this.streamingVideo = null;
+	this.counter = 0;
+	this.start = null;
+	this.stop = null;
 };
 
 NetworkFacade.prototype.init = function(server, localName) {
@@ -77,12 +80,17 @@ NetworkFacade.prototype.startStreamVideo = function(video_source, width) {
 		var canvas = document.createElement("canvas");
 		canvas.setAttribute("type", "hidden");
 		var nwf = this;
+		this.start = performance.now();
 		this.streamingVideo = setInterval(function(){
+			var start = performance.now();
 			drawPictureToCanvas(video_source, video_source.videoWidth, video_source.videoHeight, canvas, width);
 			_image_data = canvas.toDataURL("image/jpeg");
 			_image_data = _image_data.replace(/^data:image\/jpeg;base64,/ig, "");
 			nwf.sendData(getXMLforPicture(canvas.width, canvas.height, _image_data));
-		}, 50);
+			var stop = performance.now();
+			console.log(stop - start);
+			nwf.counter += 1;
+		}, 0);
 		return true;
 	}
 	else {
@@ -97,7 +105,9 @@ NetworkFacade.prototype.stopStreamVideo = function(e) {
 		hangUpFromHere();
 	}
 	else if(this.protocol == "WebSocket") {
+		this.stop = performance.now();
 		clearInterval(this.streamingVideo);
+		console.log(this.stop - this.start + "ms" + " counter: " + this.counter);
 	}
 	else {
 		// do nothing
