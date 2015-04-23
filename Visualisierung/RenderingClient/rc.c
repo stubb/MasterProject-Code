@@ -24,7 +24,6 @@ struct DisplaySetup {
 };
 
 static struct DisplaySetup ds;
-
 int windowIdNormalizer = 1;
 
 static int PollEvents()
@@ -142,6 +141,8 @@ int main(int argc, char *argv[])
 	// Initialize Windows.
 	for (i = 0; i < ds.num_displays; ++i)
 	{
+		ds.display[i].texture = NULL;
+
 		// Too lazy to write some proper title string handling here.
 		char title[] = "Window 0";
 		title[sizeof(title) - 2] += (char) i;
@@ -267,17 +268,32 @@ int main(int argc, char *argv[])
 
 				for (i = 0; i < ds.num_displays; ++i)
 				{
-					SDL_DestroyTexture(ds.display[i].texture);
+					if (ds.display[i].texture != NULL)
+					{
+						SDL_DestroyTexture(ds.display[i].texture);
+					}
 					ds.display[i].texture = SDL_CreateTexture(ds.display[i].renderer, SDL_PIXELFORMAT_BGR24, SDL_TEXTUREACCESS_STREAMING, width, height);						
-					
+					if(ds.display[i].texture == 0)
+					{
+						fprintf(stderr, "SDL_CreateTexture: %s\n", SDL_GetError());
+						exit(EXIT_FAILURE);
+					}
 					SDL_Rect slice = {i * width / ds.num_displays, 0, width / ds.num_displays, height};
 					if (SDL_UpdateTexture(ds.display[i].texture, NULL, (void *)image_data, width * number_of_color_channels) < 0)
 					{
 						fprintf(stderr, "SDL_UpdateTexture: %s\n", SDL_GetError());
 						exit(EXIT_FAILURE);
 					}
-					SDL_RenderClear(ds.display[i].renderer);
-					SDL_RenderCopy(ds.display[i].renderer, ds.display[i].texture, &slice, NULL);			
+					if (SDL_RenderClear(ds.display[i].renderer) < 0)
+					{
+						fprintf(stderr, "SDL_RenderClear: %s\n", SDL_GetError());
+						exit(EXIT_FAILURE);
+					}
+					if (SDL_RenderCopy(ds.display[i].renderer, ds.display[i].texture, &slice, NULL) < 0)
+					{
+						fprintf(stderr, "SDL_RenderCopy: %s\n", SDL_GetError());
+						exit(EXIT_FAILURE);
+					}
 					SDL_RenderPresent(ds.display[i].renderer);
 				}
 				position = 0;
