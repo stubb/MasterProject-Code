@@ -266,7 +266,7 @@ int main(int argc, char *argv[])
 				surf = NULL;
 				#endif
 
-				for (i = 0; i < ds.num_displays; ++i)
+				/*for (i = 0; i < ds.num_displays; ++i)
 				{
 					if (ds.display[i].texture != NULL)
 					{
@@ -295,7 +295,7 @@ int main(int argc, char *argv[])
 						exit(EXIT_FAILURE);
 					}
 					SDL_RenderPresent(ds.display[i].renderer);
-				}
+				}*/
 				position = 0;
 			}
 		}

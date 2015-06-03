@@ -18,7 +18,7 @@
 #include <SDL2/SDL_net.h>
 
 /*	User Functions.	*/
-#include "NetworkHandler.h"
+//#include "NetworkHandler.h"
 #include "Rendering_Client.h"
 #include "MonkeyMediaProcessor.h"
 
@@ -28,6 +28,14 @@ MonkeyMediaProcessor *mmp = NULL;
 int main(int argc, char** argv)
 {
 	vector<Rendering_Client*> *rendering_clients = new vector<Rendering_Client*>();
+
+	int return_code = 0;
+	int libws_return_code = 0;
+
+	vector<char*> *host_ips = new vector<char*>();
+	host_ips->push_back("10.0.1.1");
+
+	int host_port = 2000;
 	int port = 9000;
 
 	if (SDLNet_Init() < 0)
@@ -60,9 +68,18 @@ int main(int argc, char** argv)
 	if (rendering_clients->size() > 0)
 	{
 		mmp = new MonkeyMediaProcessor(rendering_clients);
-		NetworkHandler* nwh = new NetworkHandler(port);
-		nwh->run();
-		nwh->destroy();
+		VideoCapture *vid = new VideoCapture("H:/Laptop/Videos/Amazing Nature 720p.mp4");
+		Mat *img = new Mat();
+		for(;;)
+		{
+			vid->read(*img);
+			if (!img->empty())
+			{
+				mmp->fake_process_monkey_data(img);
+				mmp->send_to_renderers();
+			}
+			
+		}
 	}
 	else
 	{
