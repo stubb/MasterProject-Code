@@ -1,6 +1,7 @@
 #include <getopt.h>
 #include <libwebsockets.h>
 #include <iostream>
+#include <windows.h>
 
 #include "WebSocketServer.h"
 
@@ -9,6 +10,7 @@ using namespace std;
 unsigned int position = 0;
 char* recv_buffer = new char[104857600]; // 100 MB Buffer.
 char* xml_string = new char[1];
+//long long frequenz, start, ende, foo = 0;
 
 WebSocketServer::WebSocketServer(){
 	init();
@@ -20,6 +22,8 @@ WebSocketServer::WebSocketServer(int port){
 }
 
 int WebSocketServer::init() {
+	QueryPerformanceFrequency((LARGE_INTEGER*)&frequenz);
+	QueryPerformanceCounter((LARGE_INTEGER*)&start);
 	int return_code = 0;
 	memset(&info, 0, sizeof info);
 	info.port = server_port;

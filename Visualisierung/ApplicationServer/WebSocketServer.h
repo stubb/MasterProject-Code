@@ -11,6 +11,9 @@ extern MonkeyMediaProcessor* mmp;
 extern unsigned int position;
 extern char* recv_buffer;
 extern char* xml_string;
+//extern long long frequenz, start, ende, foo;
+
+
 
 using namespace std;
 
@@ -61,7 +64,13 @@ static int callback_save_data(	struct libwebsocket_context * that,
 				#if DEBUG
 					cout << "Done receiving data. Got " << position << " Bytes." << endl;
 				#endif
+				
+				QueryPerformanceCounter((LARGE_INTEGER*)&ende);
 
+				double differenz = (((double)(ende - start)) / ((double)frequenz));
+				cout << differenz << endl;
+				start = ende;
+/*
 				// Delete last XML File and allocate new Memeory for new File.
 				delete [] xml_string;
 				xml_string = new char[position];
@@ -71,7 +80,7 @@ static int callback_save_data(	struct libwebsocket_context * that,
 
 				// Process the XML File and send Results to RCs.
 				mmp->process_monkey_data(xml_string, position);
-				mmp->send_to_renderers();
+				mmp->send_to_renderers();*/
 
 				position = 0; // Reset position.
 			}

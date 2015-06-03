@@ -69,7 +69,7 @@ class MonkeyMediaProcessor
 			free(picture_raw);
 			picture_raw = NULL;
 
-			// Decoded Image holds almost no Data, because the Mat Points to the current
+			// decoded_image holds almost no Data, because the Mat Points to the current
 			// picture_raw_vector vector. Still delete it to free the Properties of the Mat.
 			decoded_image->release();
 			
@@ -184,7 +184,7 @@ class MonkeyMediaProcessor
 		//	====================================================
 		//					PUBLIC METHODS
 		//	====================================================
-		void process_monkey_data(char *xml_string, unsigned int xml_string_size)
+		/*void process_monkey_data(char *xml_string, unsigned int xml_string_size)
 		{
 			XMLDocument monkey_document;
 			monkey_document.Parse(xml_string, xml_string_size);
@@ -205,6 +205,11 @@ class MonkeyMediaProcessor
 				if (rc)
 					split_image();
 			}
+		}*/
+		void fake_process_monkey_data(Mat *img)
+		{
+			decoded_image = img;
+			split_image();
 		}
 		
 		void send_to_renderers()
