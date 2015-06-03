@@ -7,7 +7,7 @@
 #include <inttypes.h>
 #include <stdint.h>
 
-#define DEBUG 0
+#define DEBUG 1
 
 struct DisplayInfo {
 	SDL_Window *window;
@@ -25,6 +25,8 @@ struct DisplaySetup {
 
 static struct DisplaySetup ds;
 int windowIdNormalizer = 1;
+int texture_width = 1280;
+int texture_height = 720;
 
 static int PollEvents()
 {
@@ -147,7 +149,7 @@ int main(int argc, char *argv[])
 		char title[] = "Window 0";
 		title[sizeof(title) - 2] += (char) i;
 
-		ds.display[i].window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED_DISPLAY(i), SDL_WINDOWPOS_CENTERED_DISPLAY(i), 640, 480, SDL_WINDOW_FULLSCREEN_DESKTOP);
+		ds.display[i].window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED_DISPLAY(i), SDL_WINDOWPOS_CENTERED_DISPLAY(i), 640, 480, 0);//SDL_WINDOW_FULLSCREEN_DESKTOP);
 		ds.display[i].renderer = SDL_CreateRenderer(ds.display[i].window, -1, 0);
 		SDL_Delay(1000);
 
@@ -259,16 +261,52 @@ int main(int argc, char *argv[])
 				} while (rc != 0) ;
 
 				#if DEBUG
-				printf("Received Picture-Data. Process Data...\n");
+				/*printf("Received Picture-Data. Process Data...\n");
 				SDL_Surface *surf = SDL_CreateRGBSurfaceFrom((void*)image_data, width, height, 24, width * number_of_color_channels, 0xFF0000, 0x00FF00, 0x0000FF, 0xFFFFFF);
 				SDL_SaveBMP(surf, "FOO.bmp");
 				SDL_FreeSurface(surf);
-				surf = NULL;
+				surf = NULL;*/
 				#endif
 
-				/*for (i = 0; i < ds.num_displays; ++i)
+				for (i = 0; i < ds.num_displays; ++i)
 				{
-					if (ds.display[i].texture != NULL)
+					int w = 0;
+					int h = 0;
+					SDL_QueryTexture(ds.display[i].texture, NULL, NULL, &w, &h);
+					if (width != w || height != h)
+					{
+						SDL_DestroyTexture(ds.display[i].texture);
+						ds.display[i].texture = SDL_CreateTexture(ds.display[i].renderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STREAMING, width / ds.num_displays, height);						
+					}
+
+					SDL_Rect slice = {i * width / ds.num_displays, 0, width / ds.num_displays, height};
+
+					void *pixels;
+					int pitch;
+					//printf("For der Color\n");
+					SDL_Color *color = malloc(4 * sizeof(int));
+					if ( SDL_LockTexture(ds.display[i].texture, NULL, &pixels, &pitch) < 0 )
+					{
+						fprintf(stderr, "SDL_LockTexture: %s\n", SDL_GetError());
+						exit(EXIT_FAILURE);
+					}
+					//printf("For der Forschleife\n");
+					for (int row = i * width / ds.num_displays; row < (number_of_bytes - width / ds.num_displays * i); row += (width / ds.num_displays) * number_of_color_channels)
+					{
+						int *dst = pixels + row;
+						//printf("Row: %i\n", row);
+						for (int col = 0; col < width / ds.num_displays * number_of_color_channels; col += 3)
+						{
+							color->r = image_data[row + col + 2];
+							color->g = image_data[row + col + 1];
+							color->b = image_data[row + col];
+							//printf("HHHUIIII\n");
+							*dst++ = SDL_MapRGB(SDL_PIXELFORMAT_RGB24, color->r, color->g, color->b);//(color->r<<16) | (color->g<<8) | (color->b);
+						}
+					}
+					SDL_UnlockTexture(ds.display[i].texture);
+					
+					/*if (ds.display[i].texture != NULL)
 					{
 						SDL_DestroyTexture(ds.display[i].texture);
 					}
@@ -277,25 +315,24 @@ int main(int argc, char *argv[])
 					{
 						fprintf(stderr, "SDL_CreateTexture: %s\n", SDL_GetError());
 						exit(EXIT_FAILURE);
-					}
-					SDL_Rect slice = {i * width / ds.num_displays, 0, width / ds.num_displays, height};
-					if (SDL_UpdateTexture(ds.display[i].texture, NULL, (void *)image_data, width * number_of_color_channels) < 0)
+					}*/					
+					/*if (SDL_UpdateTexture(ds.display[i].texture, NULL, (void *)image_data, width * number_of_color_channels) < 0)
 					{
 						fprintf(stderr, "SDL_UpdateTexture: %s\n", SDL_GetError());
 						exit(EXIT_FAILURE);
-					}
+					}*/
 					if (SDL_RenderClear(ds.display[i].renderer) < 0)
 					{
 						fprintf(stderr, "SDL_RenderClear: %s\n", SDL_GetError());
 						exit(EXIT_FAILURE);
 					}
-					if (SDL_RenderCopy(ds.display[i].renderer, ds.display[i].texture, &slice, NULL) < 0)
+					if (SDL_RenderCopy(ds.display[i].renderer, ds.display[i].texture, /*&slice*/NULL, NULL) < 0)
 					{
 						fprintf(stderr, "SDL_RenderCopy: %s\n", SDL_GetError());
 						exit(EXIT_FAILURE);
 					}
 					SDL_RenderPresent(ds.display[i].renderer);
-				}*/
+				}
 				position = 0;
 			}
 		}

@@ -1,4 +1,5 @@
-SOURCES = as.cpp tinyxml2.cpp WebSocketServer.cpp NetworkHandler.cpp
+SOURCES = as.cpp tinyxml2.cpp
+#WebSocketServer.cpp NetworkHandler.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 
 ifeq ($(OS),Windows_NT)

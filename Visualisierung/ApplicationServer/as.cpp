@@ -1,5 +1,5 @@
 /*	Debug Mode.	*/
-#define DEBUG 0
+#define DEBUG 1
 
 /*	Picture Settings.	*/
 #define NUMBER_OF_COLOR_CHANNELS 3
@@ -68,7 +68,7 @@ int main(int argc, char** argv)
 	if (rendering_clients->size() > 0)
 	{
 		mmp = new MonkeyMediaProcessor(rendering_clients);
-		VideoCapture *vid = new VideoCapture("H:/Laptop/Videos/Amazing Nature 720p.mp4");
+		VideoCapture *vid = new VideoCapture("earth.mp4");
 		Mat *img = new Mat();
 		for(;;)
 		{
