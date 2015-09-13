@@ -58,10 +58,9 @@ class MonkeyMediaProcessor
 		int process_raw_picture(unsigned char *data, size_t length)
 		{
 			int success = 0;
-			
 			// OpenCV imdecode needs a vector instead of a unsigned char* array,
 			// so we do a quick conversion.
-			vector<unsigned char> picture_raw_vector(data, data+length);
+			vector<unsigned char> picture_raw_vector(data, data + length);
 			
 			// Decoded Image holds almost no Data, because the Mat Points to the current
 			// picture_raw_vector vector. Still delete it to free the Properties of the Mat.
@@ -71,31 +70,35 @@ class MonkeyMediaProcessor
 			imdecode(picture_raw_vector, 1, decoded_image);
 			if (decoded_image->total() * decoded_image->channels() > 24)
 			{
-				if (decoded_image->total() <= 0)
-				{
+				success = 1;
+				if (decoded_image->total() <= 0) {
 					cerr << "Something went wrong while decoding the Picture." << endl;
-					success = 1;
+					success = 0;
 				}
 			}
 			else
 			{
 				cerr << "Error: Picture sent was too small. sry :)" << endl;
+				success = 0;
 			}
 			return success;
 		}
 		
 		int process_picture(const char *data)
 		{
+			int success = 0;
+			
 			// Decode the Image Data.
 			size_t output = 0;
 			unsigned char *picture_raw = base64_decode(data, strlen(data), &output);
 			
-			process_raw_picture(picture_raw, output);
+			success = process_raw_picture(picture_raw, output);
 			
 			// Delete old Stuff, or else Memory will Bloat.
 			free(picture_raw);
 			picture_raw = NULL;
-			return 0;
+			
+			return success;
 		}
 		
 		void split_image()
