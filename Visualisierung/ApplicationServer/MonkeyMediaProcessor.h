@@ -55,20 +55,14 @@ class MonkeyMediaProcessor
 		//	====================================================
 		//					PRIVATE METHODS
 		//	====================================================
-		int process_picture(const char *data)
+		int process_raw_picture(unsigned char *data, size_t length)
 		{
-			// Decode the Image Data.
-			size_t output = 0;
-			unsigned char *picture_raw = base64_decode(data, strlen(data), &output);
+			int success = 0;
 			
 			// OpenCV imdecode needs a vector instead of a unsigned char* array,
 			// so we do a quick conversion.
-			vector<unsigned char> picture_raw_vector(picture_raw, picture_raw + output);
+			vector<unsigned char> picture_raw_vector(data, data+length);
 			
-			// Delete old Stuff, or else Memory will Bloat.
-			free(picture_raw);
-			picture_raw = NULL;
-
 			// Decoded Image holds almost no Data, because the Mat Points to the current
 			// picture_raw_vector vector. Still delete it to free the Properties of the Mat.
 			decoded_image->release();
@@ -77,24 +71,31 @@ class MonkeyMediaProcessor
 			imdecode(picture_raw_vector, 1, decoded_image);
 			if (decoded_image->total() * decoded_image->channels() > 24)
 			{
-				#if DEBUG
-					fstream imgout("./test.png", std::fstream::out | std::fstream::binary);
-					imgout.write(reinterpret_cast<char*>(picture_raw), output);
-					imgout.close();
-					
-					imwrite( "./testMat.jpg", *decoded_image );
-				#endif
-
 				if (decoded_image->total() <= 0)
+				{
 					cerr << "Something went wrong while decoding the Picture." << endl;
-				
-				return 1;
+					success = 1;
+				}
 			}
 			else
 			{
 				cerr << "Error: Picture sent was too small. sry :)" << endl;
-				return 0;
 			}
+			return success;
+		}
+		
+		int process_picture(const char *data)
+		{
+			// Decode the Image Data.
+			size_t output = 0;
+			unsigned char *picture_raw = base64_decode(data, strlen(data), &output);
+			
+			process_raw_picture(picture_raw, output);
+			
+			// Delete old Stuff, or else Memory will Bloat.
+			free(picture_raw);
+			picture_raw = NULL;
+			return 0;
 		}
 		
 		void split_image()
@@ -201,7 +202,17 @@ class MonkeyMediaProcessor
 				int rc = 0;
 				string mime = monkey_document.FirstChildElement("package")->FirstChildElement("type")->GetText();
 				if (mime.compare("picture") == 0)
+				{
 					rc = process_picture(monkey_document.FirstChildElement("package")->FirstChildElement("data")->GetText());
+				}
+				else if (mime.compare("picture_raw") == 0)
+				{
+					const char* data = monkey_document.FirstChildElement("package")->FirstChildElement("data")->GetText();
+					size_t length = strlen((char*) data);
+					rc = process_raw_picture((unsigned char*) data, length);
+					delete data;
+					data = nullptr;
+				}
 				if (rc)
 					split_image();
 			}
