@@ -210,11 +210,15 @@ class MonkeyMediaProcessor
 				}
 				else if (mime.compare("picture_raw") == 0)
 				{
-					const char* data = monkey_document.FirstChildElement("package")->FirstChildElement("data")->GetText();
-					size_t length = strlen((char*) data);
-					rc = process_raw_picture((unsigned char*) data, length);
+					unsigned char* data = (unsigned char*) monkey_document.FirstChildElement("package")->QueryUnsignedAttribute("data", 0);
+					size_t length = monkey_document.FirstChildElement("package")->QueryIntAttribute("data_size", 0);
+					rc = process_raw_picture(data, length);
 					delete data;
 					data = nullptr;
+				}
+				else
+				{
+					cout << "No supported mimetype found!" << endl;
 				}
 				if (rc)
 					split_image();
