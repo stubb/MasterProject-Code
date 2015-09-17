@@ -36,3 +36,7 @@ Visualisierung/ApplicationServer/*.png
 Visualisierung/ApplicationServer/*.jpg
 Visualisierung/ApplicationServer/*.bmp
 Visualisierung/RenderingClient/*.bmp
+
+#Video Files
+*.mp4
+*.avi

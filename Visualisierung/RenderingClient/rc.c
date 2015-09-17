@@ -7,7 +7,7 @@
 #include <inttypes.h>
 #include <stdint.h>
 
-#define DEBUG 0
+#define DEBUG 1
 
 struct DisplayInfo {
 	SDL_Window *window;
@@ -217,7 +217,7 @@ int main(int argc, char *argv[])
 						}
 
 						#if DEBUG
-						printf("Total Received: %i Bytes, Last Received: %i Bytes\n", position, rc);
+						//printf("Total Received: %i Bytes, Last Received: %i Bytes\n", position, rc);
 						#endif
 
 						// Advance Position for received Bytes.
@@ -259,37 +259,53 @@ int main(int argc, char *argv[])
 				} while (rc != 0) ;
 
 				#if DEBUG
-				printf("Received Picture-Data. Process Data...\n");
-				SDL_Surface *surf = SDL_CreateRGBSurfaceFrom((void*)image_data, width, height, 24, width * number_of_color_channels, 0xFF0000, 0x00FF00, 0x0000FF, 0xFFFFFF);
-				SDL_SaveBMP(surf, "FOO.bmp");
-				SDL_FreeSurface(surf);
-				surf = NULL;
+					printf("Received Picture-Data. Process Data...\n");
+					SDL_Surface *surf = SDL_CreateRGBSurfaceFrom((void*)image_data, width, height, 24, width * number_of_color_channels, 0xFF0000, 0x00FF00, 0x0000FF, 0xFFFFFF);
+					SDL_SaveBMP(surf, "FOO.bmp");
+					SDL_FreeSurface(surf);
+					surf = NULL;
 				#endif
 
 				for (i = 0; i < ds.num_displays; ++i)
 				{
-					if (ds.display[i].texture != NULL)
+					int w = 0;
+					int h = 0;
+					int slice_width = width / ds.num_displays;
+					int slice_height = height;
+
+					SDL_QueryTexture(ds.display[i].texture, NULL, NULL, &w, &h);
+					if (width != w || height != h)
 					{
 						SDL_DestroyTexture(ds.display[i].texture);
+						ds.display[i].texture = SDL_CreateTexture(ds.display[i].renderer, SDL_PIXELFORMAT_BGR24, SDL_TEXTUREACCESS_STREAMING, slice_width, slice_height);
 					}
-					ds.display[i].texture = SDL_CreateTexture(ds.display[i].renderer, SDL_PIXELFORMAT_BGR24, SDL_TEXTUREACCESS_STREAMING, width, height);						
-					if(ds.display[i].texture == 0)
+
+					char *pixels;
+					int pitch;
+					if (SDL_LockTexture(ds.display[i].texture, NULL, (void *)&pixels, &pitch) < 0)
 					{
-						fprintf(stderr, "SDL_CreateTexture: %s\n", SDL_GetError());
-						exit(EXIT_FAILURE);
+						fprintf(stderr, "SDL_LockTexture: %s\n", SDL_GetError());
+						exit(EXIT_FAILURE);	
 					}
-					SDL_Rect slice = {i * width / ds.num_displays, 0, width / ds.num_displays, height};
-					if (SDL_UpdateTexture(ds.display[i].texture, NULL, (void *)image_data, width * number_of_color_channels) < 0)
-					{
-						fprintf(stderr, "SDL_UpdateTexture: %s\n", SDL_GetError());
-						exit(EXIT_FAILURE);
-					}
+					/*	Offset of Data between 2D and 1D Array Representation.	*/
+					pitch = width * number_of_color_channels;
+
+					/*	Index for Texture Data.	*/
+					int index = 0;
+					/*	Start at slice * color_channels * index_of_display; Stop at total byte values; increment by pitch.	*/
+					for (int row = slice_width * i * number_of_color_channels; row < number_of_bytes; row += pitch)
+						/*	Start at Rowstart; Stop	at End of Slice * color_channels; Increment by 1 Byte. */
+						for (int col = row; col < row + slice_width * number_of_color_channels; ++col, ++index)
+							pixels[index] = image_data[col];
+
+					SDL_UnlockTexture(ds.display[i].texture);
+
 					if (SDL_RenderClear(ds.display[i].renderer) < 0)
 					{
 						fprintf(stderr, "SDL_RenderClear: %s\n", SDL_GetError());
 						exit(EXIT_FAILURE);
 					}
-					if (SDL_RenderCopy(ds.display[i].renderer, ds.display[i].texture, &slice, NULL) < 0)
+					if (SDL_RenderCopy(ds.display[i].renderer, ds.display[i].texture, NULL, NULL) < 0)
 					{
 						fprintf(stderr, "SDL_RenderCopy: %s\n", SDL_GetError());
 						exit(EXIT_FAILURE);
