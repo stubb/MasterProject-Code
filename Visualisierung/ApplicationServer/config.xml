@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<package>
+	<ApplicationServer>
+		<port>9000</port>
+	</ApplicationServer>
+	<RenderingClients>
+		<rc>
+			<ip>141.45.154.75</ip>
+			<port>2000</port>
+			<xpos>0</xpos>
+			<ypos>0</ypos>
+		</rc>
+		<rc>
+			<ip>141.45.154.76</ip>
+			<port>2000</port>
+			<xpos>1</xpos>
+			<ypos>0</ypos>
+		</rc>
+	</RenderingClients>
+</package>

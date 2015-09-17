@@ -18,6 +18,10 @@ class Rendering_Client
 	private:
 		/*	Consecutive number giving the Order of the Rendering Clients.	*/
 		int identifier;
+		/*	Horizontal Position	*/
+		int xpos;
+		/*	Vertical Position	*/
+		int ypos;
 		/*	Socket to the Rendering Client.	*/
 		TCPsocket socket = NULL;
 		/* IP with port*/
@@ -29,19 +33,25 @@ class Rendering_Client
 			identifier = id;
 		}
 
-		Rendering_Client(int id, const char* rc_ip, int rc_port)
+		int get_xpos() const
 		{
-			identifier = id;
-			init(rc_ip, rc_port);
+			return xpos;
 		}
-
+		
+		int get_ypos() const
+		{
+			return ypos;
+		}
+		
 		TCPsocket get_socket() const
 		{
 			return socket;
 		}
 
-		int init(const char* rc_ip, int rc_port)
+		int init(const char* rc_ip, int rc_port, int new_xpos, int new_ypos)
 		{
+			xpos = new_xpos;
+			ypos = new_ypos;
 			int rc = 0;
 			rc = SDLNet_ResolveHost(&ip, rc_ip, rc_port);
 			if (rc != 0)
