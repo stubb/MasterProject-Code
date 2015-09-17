@@ -1,5 +1,5 @@
 /*	Debug Mode.	*/
-#define DEBUG 1
+#define DEBUG 0
 
 /*	Picture Settings.	*/
 #define NUMBER_OF_COLOR_CHANNELS 3
@@ -59,6 +59,7 @@ int main(int argc, char** argv)
 		config_xml.Parse(config_string.c_str(), (unsigned int) config_string.size());
 		if (config_xml.Error()) {
 			cout << "XML Parse() ErrorID: " << config_xml.ErrorID() << endl;
+			exit(1);
 		}
 
 		config_xml.FirstChildElement("package")->FirstChildElement("ApplicationServer")->QueryIntAttribute("port", &port);
@@ -102,6 +103,7 @@ int main(int argc, char** argv)
 	if (rendering_clients->size() > 0)
 	{
 		mmp = new MonkeyMediaProcessor(rendering_clients);
+		mmp->init_clientship();
 		NetworkHandler* nwh = new NetworkHandler(port);
 		nwh->run();
 		nwh->destroy();

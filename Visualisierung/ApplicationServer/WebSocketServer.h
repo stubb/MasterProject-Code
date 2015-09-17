@@ -62,7 +62,7 @@ static int callback_save_data(	struct libwebsocket_context * that,
 					cout << "Done receiving data. Got " << position << " Bytes." << endl;
 				#endif
 
-				// Delete last XML File and allocate new Memeory for new File.
+				// Delete last XML File and allocate new Memory for new File.
 				delete [] xml_string;
 				xml_string = new char[position];
 
@@ -70,8 +70,8 @@ static int callback_save_data(	struct libwebsocket_context * that,
 				memcpy(xml_string, recv_buffer, position);
 
 				// Process the XML File and send Results to RCs.
-				mmp->process_monkey_data(xml_string, position);
-				mmp->send_to_renderers();
+				if (mmp->process_monkey_data(xml_string, position))
+					mmp->send_to_renderers();
 
 				position = 0; // Reset position.
 			}

@@ -6,6 +6,7 @@
 #include <vector>
 #include <iterator>
 #include <string>
+#include <sstream>
 
 #include <cstdint>
 #include <cstdlib>
@@ -33,6 +34,9 @@ class MonkeyMediaProcessor
 		//	====================================================
 		/*	Vector with all connected Rendering Clients.	*/
 		vector<Rendering_Client*> *rendering_clients;
+		/*	Rendering Clients Global Attributes	*/
+		int max_x;
+		int max_y;
 		
 		/*	Image Data.	*/
 		Mat *decoded_image;
@@ -67,20 +71,25 @@ class MonkeyMediaProcessor
 			decoded_image->release();
 			
 			// Decode Picture from Memory to Mat.
-			imdecode(picture_raw_vector, 1, decoded_image);
-			if (decoded_image->total() * decoded_image->channels() > 24)
+			if (picture_raw_vector.size() > 0)
 			{
-				success = 1;
-				if (decoded_image->total() <= 0) {
-					cerr << "Something went wrong while decoding the Picture." << endl;
+				imdecode(picture_raw_vector, 1, decoded_image);
+				if (decoded_image->total() * decoded_image->channels() > 24)
+				{
+					success = 1;
+					if (decoded_image->total() <= 0) {
+						cerr << "Something went wrong while decoding the Picture." << endl;
+						success = 0;
+					}
+				}
+				else
+				{
+					cerr << "Error: Picture sent was too small. sry :)" << endl;
 					success = 0;
 				}
 			}
 			else
-			{
-				cerr << "Error: Picture sent was too small. sry :)" << endl;
 				success = 0;
-			}
 			return success;
 		}
 		
@@ -109,11 +118,24 @@ class MonkeyMediaProcessor
 			processed_images->clear();
 			
 			// Generate Split Pictures and put them into the Vector.
-			for (unsigned int i = 0; i < rendering_clients->size() /*&& rendering_clients->size() > 1*/; ++i)
+			int width = decoded_image->cols / (max_x + 1);
+			int height = decoded_image->rows / (max_y + 1);
+			for (unsigned int i = 0; i < rendering_clients->size(); ++i)
 			{
-				Rect rect(decoded_image->cols / rendering_clients->size() * i, 0, decoded_image->cols / rendering_clients->size(), decoded_image->rows);
+				// x, y, w, h
+				Rect rect(
+					width * rendering_clients->at(i)->get_xpos(),
+					height * rendering_clients->at(i)->get_ypos(),
+					width,
+					height
+				);
 				Mat *temp_image = new Mat(*decoded_image, rect);
 				processed_images->push_back(temp_image);
+				#if DEBUG
+					stringstream ss;
+					ss << "./" << rendering_clients->at(i)->get_xpos() << "-" << rendering_clients->at(i)->get_ypos() << ".jpg";
+					imwrite(ss.str(), *(temp_image));					
+				#endif
 			}
 		}
 
@@ -124,12 +146,16 @@ class MonkeyMediaProcessor
 		MonkeyMediaProcessor()
 		{
 			decoded_image = new Mat();
+			max_x = 0;
+			max_y = 0;
 			processed_images = new vector<Mat*>();
 			rendering_clients = new vector<Rendering_Client*>();
 		}
 		MonkeyMediaProcessor(vector<Rendering_Client*> *rcs)
 		{
 			decoded_image = new Mat();
+			max_x = 0;
+			max_y = 0;
 			processed_images = new vector<Mat*>();
 			rendering_clients = rcs;
 		}
@@ -188,8 +214,24 @@ class MonkeyMediaProcessor
 		//	====================================================
 		//					PUBLIC METHODS
 		//	====================================================
-		void process_monkey_data(char *xml_string, unsigned int xml_string_size)
+		void init_clientship()
 		{
+			for (unsigned int i = 0; i < rendering_clients->size(); ++i)
+			{
+				if (rendering_clients->at(i)->get_xpos() > max_x)
+					max_x = rendering_clients->at(i)->get_xpos();
+				if (rendering_clients->at(i)->get_ypos() > max_y)
+					max_y = rendering_clients->at(i)->get_ypos();
+			}
+			
+			#if DEBUG
+				cout << "Max X: " << max_x << "; Max Y: " << max_y << endl;
+			#endif
+		}
+		
+		int process_monkey_data(char *xml_string, unsigned int xml_string_size)
+		{
+			int rc = 0;
 			XMLDocument monkey_document;
 			monkey_document.Parse(xml_string, xml_string_size);
 			if (monkey_document.Error()) {
@@ -202,7 +244,6 @@ class MonkeyMediaProcessor
 					last_image_width = processed_images->at(0)->cols;
 					last_image_height = processed_images->at(0)->rows;
 				}
-				int rc = 0;
 				string mime = monkey_document.FirstChildElement("package")->FirstChildElement("type")->GetText();
 				if (mime.compare("picture") == 0)
 				{
@@ -223,6 +264,7 @@ class MonkeyMediaProcessor
 				if (rc)
 					split_image();
 			}
+			return rc;
 		}
 		
 		void send_to_renderers()
@@ -240,9 +282,11 @@ class MonkeyMediaProcessor
 				for (unsigned int i = 0; i < rendering_clients->size(); ++i)
 				{
 					#if DEBUG
-					cout << "Will send " << processed_images->at(i)->total() * processed_images->at(i)->channels() << " Bytes per RC." << endl;
+						cout << "Will send " << processed_images->at(i)->total() * processed_images->at(i)->channels() << " Bytes per RC." << endl;
+						cout << "Is continuous: " << processed_images->at(i)->isContinuous() << endl;
 					#endif
-					SDLNet_TCP_Send(rendering_clients->at(i)->get_socket(), (void*)processed_images->at(i)->data, processed_images->at(i)->total() * processed_images->at(i)->channels());
+					Mat temp_img = processed_images->at(i)->clone();
+					SDLNet_TCP_Send(rendering_clients->at(i)->get_socket(), (void*)temp_img.data, processed_images->at(i)->total() * processed_images->at(i)->channels());
 				}
 			}
 		}
