@@ -40,3 +40,9 @@ Visualisierung/RenderingClient/*.bmp
 #Video Files
 *.mp4
 *.avi
+
+# Allow the Binary Folders.
+!Visualisierung/ApplicationServer/bin/win64/*
+!Visualisierung/ApplicationServer/bin/linux/*
+!Visualisierung/RenderingClient/bin/win64/*
+!Visualisierung/RenderingClient/bin/linux/*
