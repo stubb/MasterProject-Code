@@ -7,10 +7,10 @@ ifeq ($(OS),Windows_NT)
 else
 	ifeq ($(shell uname),Linux)
 		CXX = gcc
-		SDL_LIB = -L/usr/lib -lSDL2 -Wl,-rpath=/usr/lib -lSDL2_net
+		SDL_LIB = -lSDL2_net -lSDL2
 		SDL_INCLUDE = -I/usr/include
 		CXXFLAGS = -Wall -c -std=c99
-		LDFLAGS = $(SDL_LIB)
+		LDFLAGS = -L/usr/lib -Wl,-rpath=libs:/usr/lib $(SDL_LIB)
 		EXE = RenderingClient.app
 	endif
 

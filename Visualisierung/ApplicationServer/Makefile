@@ -14,13 +14,13 @@ ifeq ($(OS),Windows_NT)
 else
 	ifeq ($(shell uname),Linux)
 		CXX = g++
-		SDL_LIB = -L/usr/lib -lSDL2 -lSDL2_net -Wl,-rpath=/usr/lib
+		SDL_LIB = -L/usr/lib -lSDL2 -lSDL2_net
 		SDL_INCLUDE = -I/usr/include
 		OPENCV_INCLUDE =`pkg-config --cflags opencv`
 		OPENCV_LIB =`pkg-config --libs opencv`
 		LIBWEBSOCKET_INCLUDE =-I/usr/include
 		LIBWEBSOCKET_LIB =-lwebsockets
-		LDFLAGS = $(LIBWEBSOCKET_LIB) $(SDL_LIB) $(OPENCV_LIB)
+		LDFLAGS = -Wl,-rpath=libs:/usr/lib $(LIBWEBSOCKET_LIB) $(SDL_LIB) $(OPENCV_LIB)
 		EXE =ApplicationServer.app
 	endif
 
