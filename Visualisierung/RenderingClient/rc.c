@@ -178,7 +178,11 @@ int main(int argc, char *argv[])
 	/*	Set default Color of Screens to Black.	*/
 	for (i = 0; i < dp.num_displays; ++i)
 	{
-		SDL_SetRenderDrawColor(dp.display[i].renderer, 0, 0, 0, 255 );
+		SDL_SetRenderDrawColor(dp.display[i].renderer, 0, 0, 0, 0);
+		if (SDL_RenderClear(dp.display[i].renderer) != 0)
+		{
+			fprintf(stderr, "\nCouldn't clear renderer for Display #%i: %s\n", i, SDL_GetError());
+		}
 		SDL_RenderPresent(dp.display[i].renderer);
 	}
 
