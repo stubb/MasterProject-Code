@@ -1,5 +1,5 @@
 /*	DEBUG Flag.	*/
-#define DEBUG 0
+#define DEBUG 1
 
 /*	Standard Libs.	*/
 #include <stdio.h>
@@ -10,8 +10,16 @@
 #include <stdint.h>
 
 /*	SDL Includes.	*/
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_net.h>
+#if defined _WIN32
+	#include <SDL2/SDL.h>
+	#include <SDL2/SDL_net.h>
+#elif defined __linux__
+	#include <SDL2/SDL.h>
+	#include <SDL2/SDL_net.h>
+#else
+	#include <SDL2/SDL.h>
+	#include <SDL2_net/SDL_net.h>
+#endif
 
 /*	Own Header.	*/
 #include "rc.h"
@@ -19,7 +27,7 @@
 int main(int argc, char *argv[])
 {
 	#if DEBUG
-		printf("RenderingClient by KK & JB.");
+		printf("RenderingClient by KK & JB.\n");
 	#endif
 
 	/*	Addresses.	*/

@@ -16,10 +16,10 @@ else
 
 	ifeq ($(shell uname), Darwin)
 		CXX = clang
-		SDL = -framework SDL2 -framework SDL2_image
+		SDL = -framework SDL2 -framework SDL2_Net
 		CXXFLAGS = -Wall -c -std=c99
 		LDFLAGS = $(SDL)
-		EXE = renderingClient
+		EXE = RenderingClient.app
 	endif
 endif
 
