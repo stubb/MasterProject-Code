@@ -13,9 +13,17 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-/*	SDL2 Includes.	*/
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_net.h>
+/*	SDL Includes.	*/
+#if defined _WIN32
+	#include <SDL2/SDL.h>
+	#include <SDL2/SDL_net.h>
+#elif defined __linux__
+	#include <SDL2/SDL.h>
+	#include <SDL2/SDL_net.h>
+#else
+	#include <SDL2/SDL.h>
+	#include <SDL2_net/SDL_net.h>
+#endif
 
 /*	XML Includes.	*/
 #include "tinyxml2.h"

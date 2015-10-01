@@ -25,14 +25,18 @@ else
 	endif
 
 	ifeq ($(shell uname), Darwin)
-		CXX = clang
+		CXX = clang++
+		MACCES = -stdlib=libc++ -lstdc++
 		SDL = -framework SDL2 -framework SDL2_net
-		LDFLAGS = $(SDL)
-		EXE = ApplicationServer
+		OPENCV_LIB = -L/usr/local/lib -lopencv_core -lopencv_highgui -lopencv_imgproc  
+		LIBWEBSOCKET = -L/usr/local/lib -lwebsockets
+		LIBWEBSOCKET_INCLUDE = -I/usr/local/include/websockets
+		LDFLAGS = $(SDL) $(OPENCV_LIB) $(LIBWEBSOCKET)
+		EXE = ApplicationServer.app
 	endif
 endif
 
-CXXFLAGS = -Wall -c -std=c++11 $(SDL_INCLUDE) $(OPENCV_INCLUDE) $(LIBWEBSOCKET_INCLUDE)
+CXXFLAGS = -Wall -c -std=c++11 $(MACCES) $(SDL_INCLUDE) $(OPENCV_INCLUDE) $(LIBWEBSOCKET_INCLUDE)
 
 
 all: $(SOURCES) $(EXE)
