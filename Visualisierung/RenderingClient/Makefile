@@ -16,6 +16,7 @@ else
 
 	ifeq ($(shell uname), Darwin)
 		CXX = clang
+		SDL_INCLUDE = -I`pwd`/bin/mac64/libs
 		SDL = -framework SDL2 -framework SDL2_net
 		CXXFLAGS = -Wall -c -std=c99
 		LDFLAGS = $(SDL)
