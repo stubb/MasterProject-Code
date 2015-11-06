@@ -15,13 +15,12 @@ else
 	endif
 
 	ifeq ($(shell uname), Darwin)
-		FRAMEWORK_PATH=./bin/mac64/libs/
+		FRAMEWORK_PATH=./bin/mac64/libs
 		APP_NAME=RenderingClient
 		CXX = clang
 		SDL_INCLUDE = -F $(FRAMEWORK_PATH)
 		SDL = -framework SDL2 -framework SDL2_net
-		CXXFLAGS = -Wall -c -std=c99
-		LDFLAGS = $(SDL)
+		LDFLAGS = $(SDL_INCLUDE) $(SDL)
 		EXE = RenderingClient.out
 	endif
 endif
@@ -46,6 +45,8 @@ mac_package_app:
 	cp Info.plist "./build/$(APP_NAME).app/Contents/"
 	sed -e "s/APP_NAME/$(APP_NAME)/g" -i "" "./build/$(APP_NAME).app/Contents/Info.plist"
 	cp $(EXE) "./build/$(APP_NAME).app/Contents/MacOS/$(APP_NAME)"
+	install_name_tool -change @executable_path/bin/mac64/libs/SDL2.framework/Versions/A/SDL2 @executable_path/../Resources/SDL2.framework/Versions/A/SDL2 "./build/$(APP_NAME).app/Contents/MacOS/$(APP_NAME)"
+	install_name_tool -change @executable_path/bin/mac64/libs/SDL2_net.framework/Versions/A/SDL2_net @executable_path/../Resources/SDL2_net.framework/Versions/A/SDL2_net "./build/$(APP_NAME).app/Contents/MacOS/$(APP_NAME)"
 
 .PHONY: clean
 clean:
