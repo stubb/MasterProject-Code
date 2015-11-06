@@ -25,19 +25,18 @@ else
 	endif
 
 	ifeq ($(shell uname), Darwin)
+		FRAMEWORK_PATH=./bin/mac64/libs
 		CXX = clang++
 		MACCES = -stdlib=libc++ -lstdc++
 		SDL = -framework SDL2 -framework SDL2_net
-		OPENCV_LIB = -L/usr/local/lib -lopencv_core -lopencv_highgui -lopencv_imgproc  
-		LIBWEBSOCKET = -L/usr/local/lib -lwebsockets
-		LIBWEBSOCKET_INCLUDE = -I/usr/local/include/websockets
-		LDFLAGS = $(SDL) $(OPENCV_LIB) $(LIBWEBSOCKET)
-		EXE = ApplicationServer.app
+		OPENCV_LIB = -lopencv_core -lopencv_highgui -lopencv_imgproc  
+		LIBWEBSOCKET = -lwebsockets
+		LDFLAGS = -F $(FRAMEWORK_PATH) $(SDL) $(OPENCV_LIB) $(LIBWEBSOCKET)
+		EXE = ApplicationServer.out
 	endif
 endif
 
 CXXFLAGS = -Wall -c -std=c++11 $(MACCES) $(SDL_INCLUDE) $(OPENCV_INCLUDE) $(LIBWEBSOCKET_INCLUDE)
-
 
 all: $(SOURCES) $(EXE)
 
@@ -46,7 +45,8 @@ $(EXE): $(OBJECTS)
 	
 .cpp.o:
 	$(CXX) $(CXXFLAGS) $< -o $@
-
+	
+.PHONY: clean
 clean:
 ifeq ($(OS),Windows_NT)
 	del *.o && del $(EXE)
