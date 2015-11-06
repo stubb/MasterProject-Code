@@ -15,18 +15,20 @@ else
 	endif
 
 	ifeq ($(shell uname), Darwin)
+		FRAMEWORK_PATH=./bin/mac64/libs/
+		APP_NAME=RenderingClient
 		CXX = clang
-		SDL_INCLUDE = -I`pwd`/bin/mac64/libs
+		SDL_INCLUDE = -F $(FRAMEWORK_PATH)
 		SDL = -framework SDL2 -framework SDL2_net
 		CXXFLAGS = -Wall -c -std=c99
 		LDFLAGS = $(SDL)
-		EXE = RenderingClient.app
+		EXE = RenderingClient.out
 	endif
 endif
 
 CXXFLAGS = -Wall -c -std=c99 $(SDL_INCLUDE)
 
-all: $(EXE)
+Wall: $(EXE)
 
 $(EXE): renderingClient.o
 	$(CXX) $< $(LDFLAGS) -o $@
@@ -34,6 +36,18 @@ $(EXE): renderingClient.o
 renderingClient.o: rc.c
 	$(CXX) $(CXXFLAGS) $< -o $@
 
+mac_clean_app:
+	rm -rf "./build/$(APP_NAME).app/"
+	
+mac_package_app:
+	mkdir -p "./build/$(APP_NAME).app"/Contents/{MacOS,Resources}
+	cp -R "$(FRAMEWORK_PATH)/SDL2.framework" "./build/$(APP_NAME).app/Contents/Resources/"
+	cp -R "$(FRAMEWORK_PATH)/SDL2_net.framework" "./build/$(APP_NAME).app/Contents/Resources/"
+	cp Info.plist "./build/$(APP_NAME).app/Contents/"
+	sed -e "s/APP_NAME/$(APP_NAME)/g" -i "" "./build/$(APP_NAME).app/Contents/Info.plist"
+	cp $(EXE) "./build/$(APP_NAME).app/Contents/MacOS/$(APP_NAME)"
+
+.PHONY: clean
 clean:
 ifeq ($(OS),Windows_NT)
 	del *.o && del $(EXE)

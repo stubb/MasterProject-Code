@@ -44,6 +44,8 @@ Visualisierung/RenderingClient/*.bmp
 
 # Allow the Binary Folders.
 !Visualisierung/ApplicationServer/bin/win64/*
-!Visualisierung/ApplicationServer/bin/linux/*
+!Visualisierung/ApplicationServer/bin/linux64/*
+!Visualisierung/ApplicationServer/bin/mac64/*
 !Visualisierung/RenderingClient/bin/win64/*
-!Visualisierung/RenderingClient/bin/linux/*
+!Visualisierung/RenderingClient/bin/linux64/*
+!Visualisierung/RenderingClient/bin/mac64/*
